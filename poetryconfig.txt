@@ -1,0 +1,60 @@
+Parfait ! On repart sur des bases solides. Voici l'ordre exact à suivre.
+
+---
+
+## Étape 0 — Vérification
+
+```bash
+python --version    # doit être >= 3.11
+poetry --version    # doit s'afficher
+docker --version    # doit s'afficher
+```
+
+---
+
+## Étape 1 — Initialiser Poetry dans le projet
+
+```bash
+# Se placer dans le projet
+cd bp_monitor
+
+# Environnement virtuel DANS le projet (important pour VSCode)
+poetry config virtualenvs.in-project true
+
+# Initialiser
+poetry init \
+  --name "bp-monitor" \
+  --description "Microservice de suivi de tension artérielle" \
+  --python "^3.11" \
+  --no-interaction
+```
+
+---
+
+## Étape 2 — Installer les dépendances
+
+```bash
+poetry add fastapi "uvicorn[standard]" pydantic "pydantic-settings" \
+           "sqlalchemy[asyncio]" asyncpg alembic \
+           "redis[hiredis]" "python-jose[cryptography]" \
+           "passlib[bcrypt]"
+
+poetry add --group dev pytest pytest-asyncio httpx
+```
+
+---
+
+## Étape 3 — Configurer VSCode
+
+```bash
+# Afficher le chemin du venv
+poetry env info --path
+```
+
+Puis dans VSCode :
+- `Ctrl+Shift+P` → **Python: Select Interpreter**
+- Sélectionner le `.venv` dans votre projet
+
+---
+
+Dites-moi ce que retourne l'**Étape 0** et on continue. 🚀
