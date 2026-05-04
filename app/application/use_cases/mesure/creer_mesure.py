@@ -1,5 +1,7 @@
 from uuid import uuid4
 
+from sqlalchemy.orm import selectinload
+
 from app.application.dtos.mesure_dto import CreerMesureDTO, MesureDTO
 from app.application.dtos.alerte_dto import AlerteDTO
 from app.application.services.notification_service import INotificationService
@@ -16,6 +18,20 @@ from app.infrastructure.models.bp.patient import PatientModel
 from datetime import datetime
 from sqlalchemy import select
 
+from datetime import datetime
+from uuid import uuid4
+
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
+
+from app.application.dtos.mesure_dto import CreerMesureDTO, MesureDTO
+from app.application.services.notification_service import INotificationService
+from app.core.exceptions import PatientNotFoundError
+from app.domain.enums.bp_category import NiveauAlerte, StatutAlerte
+from app.domain.services.analyseur_ta import AnalyseurTA
+from app.domain.value_objects.tension_arterielle import TensionArterielle
+from app.infrastructure.db.session import AsyncSessionFactory
+
 
 class CreerMesureUseCase:
     """
@@ -25,7 +41,7 @@ class CreerMesureUseCase:
 
     def __init__(
         self,
-        notification_service: INotificationService,
+        notification_service: INotificationService | None = None,
     ) -> None:
         self._notifications = notification_service
         self._analyseur = AnalyseurTA()
@@ -34,7 +50,12 @@ class CreerMesureUseCase:
         async with AsyncSessionFactory() as session:
 
             # 1. Vérifier que le patient existe
-            patient = await session.get(PatientModel, dto.patient_id)
+            result = await session.execute(
+                select(PatientModel)
+                .where(PatientModel.id == dto.patient_id)
+                .options(selectinload(PatientModel.user))
+            )
+            patient = result.scalar_one_or_none()
             if not patient:
                 raise PatientNotFoundError()
 
@@ -100,7 +121,7 @@ class CreerMesureUseCase:
         message = self._analyseur.generer_message(tension)
         alerte = AlerteModel(
             patient_id=patient.id,
-            medecin_id=patient.user.patient_profile and None,
+            medecin_id=None,
             systolique=tension.systolique,
             diastolique=tension.diastolique,
             niveau=niveau,
