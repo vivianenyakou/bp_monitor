@@ -1,0 +1,55 @@
+from pydantic import BaseModel, EmailStr, Field
+
+
+class RegisterSchema(BaseModel):
+    username: str = Field(..., min_length=3, max_length=50)
+    email: EmailStr
+    password: str = Field(..., min_length=6, max_length=72)
+    first_name: str | None = None
+    last_name: str | None = None
+    phone_number: str | None = None
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "username": "ama.koffi",
+                "email": "ama.koffi@email.com",
+                "password": "motdepasse123",
+                "first_name": "Ama",
+                "last_name": "Koffi",
+                "phone_number": "+228 90 00 00 00",
+            }
+        }
+    }
+
+
+class LoginSchema(BaseModel):
+    email: EmailStr
+    password: str = Field(..., max_length=72)
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "email": "ama.koffi@bpmonitor.com",
+                "password": "secret",
+            }
+        }
+    }
+
+
+class TokenSchema(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+
+
+class UtilisateurConnecteSchema(BaseModel):
+    id: int
+    username: str
+    email: str
+    first_name: str | None
+    last_name: str | None
+    roles: list[str]
+    permissions: list[str]
+
+    model_config = {"from_attributes": True}

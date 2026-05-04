@@ -139,3 +139,4 @@ docker-compose up --build
 docker-compose exec api alembic init alembic
 docker-compose exec api alembic revision --autogenerate -m "initial migration"
 docker-compose exec api python -m app.infrastructure.db.seed
+poetry lock

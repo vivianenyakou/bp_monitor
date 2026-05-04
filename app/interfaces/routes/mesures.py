@@ -1,15 +1,20 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.application.dtos.mesure_dto import CreerMesureDTO
 from app.application.use_cases.mesure.creer_mesure import CreerMesureUseCase
 from app.application.use_cases.mesure.lister_mesures import ListerMesuresUseCase
 from app.application.use_cases.mesure.obtenir_resume import ObtenirResumeUseCase
 from app.core.exceptions import BPMonitorException
+from app.domain.enums.role_enum import RoleUtilisateur
+from app.infrastructure.db.session import get_db_session
+from app.infrastructure.models.auth.user import UserModel
+from app.interfaces.dependencies.authorization import require_any_role
 from app.interfaces.schemas.mesure import (
     CreerMesureSchema,
     MesureSchema,
     ResumeSessionSchema,
 )
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/mesures", tags=["Mesures"])
 
@@ -20,7 +25,9 @@ router = APIRouter(prefix="/mesures", tags=["Mesures"])
     status_code=status.HTTP_201_CREATED,
     summary="Enregistrer une mesure de tension",
 )
-async def creer_mesure(body: CreerMesureSchema):
+async def creer_mesure(body: CreerMesureSchema,
+    current_user: UserModel = Depends(require_any_role(RoleUtilisateur.MEDECIN, RoleUtilisateur.ADMIN, RoleUtilisateur.PATIENT, RoleUtilisateur.SECRETAIRE)),
+    session: AsyncSession = Depends(get_db_session),):
     """
     Enregistre une mesure de tension artérielle.
     Déclenche automatiquement une alerte si les seuils sont dépassés.
@@ -49,7 +56,7 @@ async def creer_mesure(body: CreerMesureSchema):
     response_model=list[MesureSchema],
     summary="Lister les mesures d'un patient",
 )
-async def lister_mesures(patient_id: int):
+async def lister_mesures(patient_id: int, current_user: UserModel = Depends(require_any_role(RoleUtilisateur.MEDECIN, RoleUtilisateur.ADMIN, RoleUtilisateur.PATIENT, RoleUtilisateur.SECRETAIRE)), session: AsyncSession = Depends(get_db_session)):
     """Retourne toutes les mesures d'un patient, triées par date décroissante."""
     try:
         use_case = ListerMesuresUseCase()
@@ -63,7 +70,7 @@ async def lister_mesures(patient_id: int):
     response_model=ResumeSessionSchema,
     summary="Obtenir le résumé d'une session",
 )
-async def obtenir_resume(patient_id: int, session_id: str):
+async def obtenir_resume(patient_id: int, session_id: str, current_user: UserModel = Depends(require_any_role(RoleUtilisateur.MEDECIN, RoleUtilisateur.ADMIN, RoleUtilisateur.PATIENT, RoleUtilisateur.SECRETAIRE)), session: AsyncSession = Depends(get_db_session)):
     """
     Retourne les moyennes d'une session (partielle ou complète).
     Inclut les moyennes globale, matin, soir et par jour.
