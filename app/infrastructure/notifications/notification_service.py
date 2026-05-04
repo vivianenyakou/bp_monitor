@@ -3,17 +3,20 @@ from app.application.services.notification_service import INotificationService
 from app.core.exceptions import NotificationDeliveryError
 from app.infrastructure.db.session import AsyncSessionFactory
 from app.infrastructure.models.auth.user import UserModel
+from app.infrastructure.models.bp.patient import PatientModel
 from app.infrastructure.notifications.afriksms_channel import AfrikSmsChannel
 
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from app.infrastructure.models.auth.role import RoleModel
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 
 class NotificationService(INotificationService):
     """
     Implémentation du service de notifications.
-    Utilise AfrikSMS pour les SMS.
+    Notifie le patient ET le médecin en cas d'alerte.
     """
 
     def __init__(self) -> None:
@@ -27,33 +30,71 @@ class NotificationService(INotificationService):
         pass
 
     async def notifier_medecin(self, alerte: AlerteDTO) -> None:
-        """
-        Notifie le médecin référent du patient par SMS
-        quand une alerte critique est déclenchée.
-        """
-        if not alerte.medecin_id:
-            return
-
+        """Notifie le patient ET le médecin en cas d'alerte."""
         async with AsyncSessionFactory() as session:
-            result = await session.execute(
-                select(UserModel)
-                .where(UserModel.id == alerte.medecin_id)
-                .options(
-                    selectinload(UserModel.roles)
-                    .selectinload(RoleModel.permissions)
+
+            # ── Charger le patient ────────────────────────────────
+            patient_result = await session.execute(
+                select(PatientModel)
+                .where(PatientModel.id == alerte.patient_id)
+                .options(selectinload(PatientModel.user))
+            )
+            patient = patient_result.scalar_one_or_none()
+
+            # ── Charger le médecin ────────────────────────────────
+            medecin = None
+            if alerte.medecin_id:
+                medecin_result = await session.execute(
+                    select(UserModel)
+                    .where(UserModel.id == alerte.medecin_id)
+                    .options(
+                        selectinload(UserModel.roles)
+                        .selectinload(RoleModel.permissions)
+                    )
                 )
-            )
-            medecin = result.scalar_one_or_none()
+                medecin = medecin_result.scalar_one_or_none()
 
-            if not medecin or not medecin.phone_number:
-                return
+            # ── Notifier le patient ───────────────────────────────
+            if patient and patient.user and patient.user.phone_number:
+                await self._notifier_patient(alerte, patient.user)
 
-            message = (
-                f"🚨 Alerte BP Monitor\n"
-                f"Patient ID : {alerte.patient_id}\n"
-                f"Tension : {alerte.systolique}/{alerte.diastolique} mmHg\n"
-                f"Niveau : {alerte.niveau.upper()}\n"
-                f"{alerte.message}"
-            )
+            # ── Notifier le médecin ───────────────────────────────
+            if medecin and medecin.phone_number:
+                await self._notifier_medecin(alerte, medecin)
 
-            await self._sms.envoyer(medecin.phone_number, message)
+    async def _notifier_patient(
+        self, alerte: AlerteDTO, user: UserModel
+    ) -> None:
+        """SMS envoyé au patient."""
+        messages = {
+            "critique": (
+                f"🚨 ALERTE TENSION - BP Monitor\n"
+                f"Votre tension est CRITIQUE : "
+                f"{alerte.systolique}/{alerte.diastolique} mmHg.\n"
+                f"Consultez un médecin immédiatement."
+            ),
+            "avertissement": (
+                f"⚠️ Tension élevée - BP Monitor\n"
+                f"Votre tension est élevée : "
+                f"{alerte.systolique}/{alerte.diastolique} mmHg.\n"
+                f"Une surveillance médicale est recommandée."
+            ),
+        }
+        message = messages.get(
+            alerte.niveau.value,
+            f"Alerte tension : {alerte.systolique}/{alerte.diastolique} mmHg."
+        )
+        await self._sms.envoyer(user.phone_number, message)
+
+    async def _notifier_medecin(
+        self, alerte: AlerteDTO, medecin: UserModel
+    ) -> None:
+        """SMS envoyé au médecin."""
+        message = (
+            f"🚨 Alerte BP Monitor\n"
+            f"Patient ID : {alerte.patient_id}\n"
+            f"Tension : {alerte.systolique}/{alerte.diastolique} mmHg\n"
+            f"Niveau : {alerte.niveau.upper()}\n"
+            f"{alerte.message}"
+        )
+        await self._sms.envoyer(medecin.phone_number, message)

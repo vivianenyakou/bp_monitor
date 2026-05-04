@@ -31,6 +31,7 @@ from app.domain.enums.bp_category import NiveauAlerte, StatutAlerte
 from app.domain.services.analyseur_ta import AnalyseurTA
 from app.domain.value_objects.tension_arterielle import TensionArterielle
 from app.infrastructure.db.session import AsyncSessionFactory
+from app.infrastructure.notifications.notification_service import NotificationService
 
 
 class CreerMesureUseCase:
@@ -43,7 +44,7 @@ class CreerMesureUseCase:
         self,
         notification_service: INotificationService | None = None,
     ) -> None:
-        self._notifications = notification_service
+        self._notifications = notification_service or NotificationService()
         self._analyseur = AnalyseurTA()
 
     async def executer(self, dto: CreerMesureDTO) -> MesureDTO:

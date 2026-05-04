@@ -91,7 +91,7 @@ USERS = [
         "last_name": "Mensah",
         "email": "kofi.mensah@bpmonitor.com",
         "password_hash": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",  # secret
-        "phone_number": "+228 98 29 56 89",
+        "phone_number": "+22898295689",
         "is_active": True,
         "email_confirmed": True,
         "role": "medecin",
@@ -102,7 +102,7 @@ USERS = [
         "last_name": "Koffi",
         "email": "ama.koffi@bpmonitor.com",
         "password_hash": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",  # secret
-        "phone_number": "+228 98 29 56 89",
+        "phone_number": "+22898295689",
         "is_active": True,
         "email_confirmed": True,
         "role": "patient",
@@ -117,7 +117,7 @@ PATIENTS = [
         "gender": "F",
         "birth_date": date(1990, 5, 15),
         "address": "Lomé, Togo",
-        "emergency_contact": "+228 98 29 56 89",
+        "emergency_contact": "+22898295689",
         "blood_group": BloodGroup.A_PLUS,
     },
 ]
