@@ -1,7 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.core.config import get_settings
+from app.core.exceptions import BPMonitorException
+from app.interfaces.routes import alertes, mesures, patients
 
 settings = get_settings()
 
@@ -11,7 +14,16 @@ app = FastAPI(
     debug=settings.debug,
     docs_url="/api/docs",
     redoc_url="/api/redoc",
+    description="Microservice de suivi de tension artérielle — Clean Architecture",
 )
+
+# ── Routes ────────────────────────────────────────────────────────
+app.include_router(mesures.router, prefix=settings.api_prefix)
+app.include_router(alertes.router, prefix=settings.api_prefix)
+app.include_router(patients.router, prefix=settings.api_prefix)
+
+
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -20,6 +32,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ── Gestionnaire d'erreurs global ─────────────────────────────────
+@app.exception_handler(BPMonitorException)
+async def bp_monitor_exception_handler(
+    request: Request, exc: BPMonitorException
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"succes": False, "message": exc.message},
+    )
 
 
 @app.get("/", tags=["Santé"])
