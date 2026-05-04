@@ -135,5 +135,6 @@ app/
 **6 → `main.py` + Docker** — on lance tout
 
 ---
-
-On commence par **"go core"** ? 🚀
+docker-compose up --build
+docker-compose exec api alembic init alembic
+docker-compose exec api alembic revision --autogenerate -m "initial migration"

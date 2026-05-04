@@ -2,7 +2,7 @@ from abc import ABC
 from datetime import datetime, timezone
 from uuid import UUID, uuid4
 
-
+# chaque objet a un id, une date de création, une date de modification
 class BaseEntity(ABC):
     def __init__(self, id: UUID | None = None) -> None:
         self._id: UUID = id or uuid4()

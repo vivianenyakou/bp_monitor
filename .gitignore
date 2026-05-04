@@ -1,0 +1,23 @@
+# Environnement
+.env
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Docker
+postgres_data/
+redis_data/
+
+# Python
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# Alembic
+alembic/versions/*.py
