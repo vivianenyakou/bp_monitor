@@ -43,10 +43,9 @@ class Settings(BaseSettings):
     jwt_refresh_token_expire_days: int = 7
 
     # Notifications
-    twilio_account_sid: str = ""
-    twilio_auth_token: str = ""
-    twilio_from_number: str = ""
-    fcm_server_key: str = ""
+    afriksms_client_id: str = ""
+    afriksms_api_key: str = ""
+    afriksms_sender_id: str = "CliniqueC2G"
 
     # Mode intégré — Vitoo Santé
     vitoo_api_url: str = ""
