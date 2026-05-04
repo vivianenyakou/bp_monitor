@@ -4,7 +4,7 @@ from functools import lru_cache
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
+#les variables d'environnemen
 class AppMode(StrEnum):
     STANDALONE = "standalone"   # BP Monitor seul
     INTEGRATED = "integrated"   # Connecté à Vitoo Santé
@@ -15,6 +15,7 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
+        extra="ignore",
     )
 
     # Application
@@ -28,7 +29,7 @@ class Settings(BaseSettings):
     allowed_origins: list[str] = ["*"]
 
     # Base de données
-    database_url: str = "postgresql+asyncpg://user:password@localhost:5432/bp_monitor"
+    database_url: str = "postgresql+asyncpg://bp_user:bp_password@db:5432/bp_monitor"
     db_pool_size: int = 10
     db_max_overflow: int = 20
 

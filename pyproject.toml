@@ -1,6 +1,7 @@
 [project]
 name = "bp-monitor"
 version = "0.1.0"
+package-mode = false
 description = "Microservice de suivi de tension artérielle"
 authors = [
     {name = "vivianenyakou"}
