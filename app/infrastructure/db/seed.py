@@ -4,6 +4,7 @@ from datetime import date
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domain.enums.role_enum import RoleUtilisateur
 from app.infrastructure.db.session import AsyncSessionFactory
 from app.infrastructure.models.auth.permission import PermissionModel
 from app.infrastructure.models.auth.role import RoleModel
@@ -117,7 +118,7 @@ USERS = [
         "phone_number": "+22898295689",
         "is_active": True,
         "email_confirmed": True,
-        "role": "admin",
+        "role": RoleUtilisateur.SUPER_ADMIN,
     },
     {
         "username": "dr.kofi",
@@ -128,7 +129,7 @@ USERS = [
         "phone_number": "+22898295689",
         "is_active": True,
         "email_confirmed": True,
-        "role": "medecin",
+        "role": RoleUtilisateur.MEDECIN,
     },
     {
         "username": "ama.patient",
@@ -139,7 +140,7 @@ USERS = [
         "phone_number": "+22898295689",
         "is_active": True,
         "email_confirmed": True,
-        "role": "patient",
+        "role": RoleUtilisateur.PATIENT,
     },
 ]
 

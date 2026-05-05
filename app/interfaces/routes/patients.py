@@ -45,7 +45,7 @@ async def lister_medecins(
 async def choisir_medecin(
     patient_id: int,
     body: ChoisirMedecinSchema,
-    current_user: UserModel = Depends(require_any_role("patient", "admin")),
+    current_user: UserModel = Depends(require_any_role(RoleUtilisateur.PATIENT, RoleUtilisateur.ADMIN)),
 ):
     """Le patient choisit son médecin référent."""
     try:
@@ -65,7 +65,7 @@ async def choisir_medecin(
     summary="Générer un code d'invitation",
 )
 async def generer_invitation(
-    current_user: UserModel = Depends(require_any_role("medecin", "admin")),
+    current_user: UserModel = Depends(require_any_role(RoleUtilisateur.MEDECIN, RoleUtilisateur.ADMIN)),
 ):
     """Le médecin génère un code d'invitation valable 48h."""
     try:
@@ -86,7 +86,7 @@ async def generer_invitation(
 async def accepter_invitation(
     patient_id: int,
     body: AccepterInvitationSchema,
-    current_user: UserModel = Depends(require_any_role("patient", "admin")),
+    current_user: UserModel = Depends(require_any_role(RoleUtilisateur.PATIENT, RoleUtilisateur.ADMIN)),
 ):
     """Le patient entre le code d'invitation pour se lier à un médecin."""
     try:

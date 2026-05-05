@@ -4,6 +4,7 @@ from app.application.dtos.alerte_dto import AcquitterAlerteDTO
 from app.application.use_cases.alerte.acquitter_alerte import AcquitterAlerteUseCase
 from app.application.use_cases.alerte.declencher_alerte import DeclencherAlerteUseCase
 from app.core.exceptions import BPMonitorException
+from app.domain.enums.role_enum import RoleUtilisateur
 from app.infrastructure.models.auth.user import UserModel
 from app.infrastructure.notifications.notification_service import NotificationService
 from app.interfaces.dependencies.authorization import require_any_role
@@ -47,7 +48,7 @@ async def acquitter_alerte(alerte_id: int, body: AcquitterAlerteSchema):
 @router.post("/{alerte_id}/declencher", response_model=AlerteSchema)
 async def declencher_alerte(
     alerte_id: int,
-    current_user: UserModel = Depends(require_any_role("medecin", "admin")),
+    current_user: UserModel = Depends(require_any_role(RoleUtilisateur.MEDECIN, RoleUtilisateur.ADMIN)),
 ):
     try:
         use_case = DeclencherAlerteUseCase(
