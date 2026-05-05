@@ -8,7 +8,7 @@ from app.interfaces.dependencies.authorization import require_super_admin
 from app.interfaces.schemas.organisation import CreerOrganisationSchema, OrganisationSchema
 
 
-router = APIRouter(prefix="/tenants", tags=["Organisations"])
+router = APIRouter(prefix="/organisations", tags=["Organisations"])
 
 
 @router.post(

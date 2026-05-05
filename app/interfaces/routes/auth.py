@@ -35,6 +35,7 @@ async def register(body: RegisterSchema):
             first_name=body.first_name,
             last_name=body.last_name,
             phone_number=body.phone_number,
+            organisation_code=body.organisation_code,
         )
         return await use_case.executer(dto)
     except BPMonitorException as e:
@@ -50,7 +51,7 @@ async def login(body: LoginSchema):
     """Authentifie un utilisateur et retourne les tokens JWT."""
     try:
         use_case = LoginUseCase()
-        dto = LoginDTO(email=body.email, password=body.password)
+        dto = LoginDTO(identifiant=body.identifiant,password=body.password)
         return await use_case.executer(dto)
     except BPMonitorException as e:
         raise HTTPException(status_code=e.status_code, detail=e.message)
@@ -70,4 +71,8 @@ async def me(
         "username": current_user.username,
         "roles": current_user.role_names,
         "permissions": current_user.permission_names,
+        "first_name": current_user.first_name,
+        "last_name": current_user.last_name,
+        "phone_number": current_user.phone_number,
+        "organisation_code": current_user.organisation_id,
     }

@@ -11,6 +11,7 @@ from app.infrastructure.models.auth.user import UserModel
 from app.infrastructure.models.bp.patient import PatientModel
 from app.domain.enums.blood_group import BloodGroup
 from app.infrastructure.models.multi_tenant.organisations import OrganisationModel
+from app.infrastructure.auth.password_service import PasswordService
 
 
 # ── Permissions ───────────────────────────────────────────────────
@@ -112,8 +113,8 @@ USERS = [
         "first_name": "Super",
         "last_name": "Admin",
         "email": "admin@bpmonitor.com",
-        "password_hash": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",  # secret
-        "phone_number": "+228 98 29 56 89",
+        "password_hash": PasswordService.hasher("secret"),  # secret
+        "phone_number": "+22898295689",
         "is_active": True,
         "email_confirmed": True,
         "role": "admin",
@@ -123,7 +124,7 @@ USERS = [
         "first_name": "Kofi",
         "last_name": "Mensah",
         "email": "kofi.mensah@bpmonitor.com",
-        "password_hash": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",  # secret
+        "password_hash": PasswordService.hasher("secret"),  # secret
         "phone_number": "+22898295689",
         "is_active": True,
         "email_confirmed": True,
@@ -134,7 +135,7 @@ USERS = [
         "first_name": "Ama",
         "last_name": "Koffi",
         "email": "ama.koffi@bpmonitor.com",
-        "password_hash": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",  # secret
+        "password_hash": PasswordService.hasher("secret"),  # secret
         "phone_number": "+22898295689",
         "is_active": True,
         "email_confirmed": True,

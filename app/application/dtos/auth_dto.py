@@ -9,11 +9,12 @@ class RegisterDTO:
     first_name: str | None = None
     last_name: str | None = None
     phone_number: str | None = None
+    organisation_code: str | None = None
 
 
 @dataclass
 class LoginDTO:
-    email: str
+    identifiant: str
     password: str
 
 
@@ -32,5 +33,7 @@ class UtilisateurDTO:
     first_name: str | None
     last_name: str | None
     phone_number: str | None
+    organisation_code: str | None
     roles: list[str]
     permissions: list[str]
+    organisation_id: int | None

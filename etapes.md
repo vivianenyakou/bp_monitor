@@ -137,6 +137,7 @@ app/
 ---
 docker-compose up --build
 docker-compose exec api alembic init alembic
+docker compose exec api alembic upgrade head
 docker-compose exec api alembic revision --autogenerate -m "initial migration"
 docker-compose exec api python -m app.infrastructure.db.seed
 poetry lock
@@ -152,3 +153,4 @@ poetry lock
 9. Use Cases tenant — créer, lister, rejoindre
 10. Routes tenant
 11. Seed mis à jour
+docker-compose exec db psql -U bp_user -d bp_monitor -c "UPDATE users SET phone_number = REPLACE(REPLACE(phone_number, ' ', ''), '-', '');"
