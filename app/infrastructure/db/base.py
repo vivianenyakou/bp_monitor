@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, Integer, String, func
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.orm import DeclarativeBase
 
 
@@ -13,3 +13,4 @@ class AuditableEntity(Base):
     last_modified_by = Column(String, nullable=True)
     created_on = Column(DateTime(timezone=True), server_default=func.now())
     last_modified_on = Column(DateTime(timezone=True), onupdate=func.now())
+    organisation_id = Column(Integer, ForeignKey("organisations.id"), nullable=True)

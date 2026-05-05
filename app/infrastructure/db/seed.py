@@ -10,6 +10,7 @@ from app.infrastructure.models.auth.role import RoleModel
 from app.infrastructure.models.auth.user import UserModel
 from app.infrastructure.models.bp.patient import PatientModel
 from app.domain.enums.blood_group import BloodGroup
+from app.infrastructure.models.multi_tenant.organisations import OrganisationModel
 
 
 # ── Permissions ───────────────────────────────────────────────────
@@ -73,6 +74,38 @@ ROLES = [
 
 
 # ── Utilisateurs de test ──────────────────────────────────────────
+
+ORGANISATIONS = [
+    {
+        "nom": "Hôpital de Lomé",
+        "code": "HOPITAL_LOME",
+        "adresse": "Boulevard du 13 Janvier, Lomé",
+        "telephone": "+228 22 00 00 00",
+        "email": "contact@hopital-lome.tg",
+    },
+    {
+        "nom": "Clinique Biasa",
+        "code": "CLINIQUE_BIASA",
+        "adresse": "Lomé, Togo",
+        "telephone": "+228 22 11 11 11",
+        "email": "contact@biasa.tg",
+    },
+    {
+        "nom": "Centre de Santé de Kara",
+        "code": "CENTRE_KARA",
+        "adresse": "Kara, Togo",
+        "telephone": "+228 22 22 22 22",
+        "email": "contact@kara.tg",
+    },
+    {
+        "nom": "Hôpital de Sokodé",
+        "code": "HOPITAL_SOKODE",
+        "adresse": "Sokodé, Togo",
+        "telephone": "+228 22 33 33 33",
+        "email": "contact@sokode.tg",
+    },
+]
+
 USERS = [
     {
         "username": "admin",
@@ -123,7 +156,30 @@ PATIENTS = [
 ]
 
 
+
 # ── Fonctions ─────────────────────────────────────────────────────
+async def seed_tenants(session: AsyncSession) -> dict[str, OrganisationModel]:
+    print("⏳ Création des organisations...")
+    tenants_map = {}
+
+    for data in ORGANISATIONS:
+        result = await session.execute(
+            select(OrganisationModel).where(OrganisationModel.code == data["code"])
+        )
+        tenant = result.scalar_one_or_none()
+
+        if not tenant:
+            tenant = OrganisationModel(**data)
+            session.add(tenant)
+            await session.flush()
+            print(f"   ✅ Organisation créée : {data['nom']}")
+        else:
+            print(f"   ⏭️  Organisation existante : {data['nom']}")
+
+        tenants_map[data["code"]] = tenant
+
+    return tenants_map
+
 async def seed_permissions(session: AsyncSession) -> dict[str, PermissionModel]:
     """Crée les permissions si elles n'existent pas."""
     print("⏳ Création des permissions...")
@@ -149,7 +205,6 @@ async def seed_permissions(session: AsyncSession) -> dict[str, PermissionModel]:
         permissions_map[data["name"]] = permission
 
     return permissions_map
-
 
 async def seed_roles(
     session: AsyncSession,
@@ -184,7 +239,6 @@ async def seed_roles(
         roles_map[data["name"]] = role
 
     return roles_map
-
 
 async def seed_users(
     session: AsyncSession,
@@ -256,12 +310,6 @@ async def run_seed() -> None:
 
             await session.commit()
             print("\n✅ Seed terminé avec succès !\n")
-            print("📋 Comptes disponibles :")
-            print("   Email                      | Mot de passe | Rôle")
-            print("   ---------------------------|--------------|--------")
-            print("   admin@bpmonitor.com        | secret       | admin")
-            print("   kofi.mensah@bpmonitor.com  | secret       | medecin")
-            print("   ama.koffi@bpmonitor.com    | secret       | patient")
 
         except Exception as e:
             await session.rollback()

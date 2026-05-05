@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.core.exceptions import InvalidTokenError
+from app.domain.enums.role_enum import RoleUtilisateur
 from app.infrastructure.auth.jwt_service import JWTService
 from app.infrastructure.db.session import get_db_session
 from app.infrastructure.models.auth.user import UserModel
@@ -24,6 +25,7 @@ async def get_current_user(
     try:
         payload = JWTService.decoder_token(credentials.credentials)
         user_id = int(payload.get("sub"))
+        organisation_id = payload.get("organisation_id")
     except (InvalidTokenError, ValueError, TypeError):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -47,7 +49,11 @@ async def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Utilisateur introuvable ou désactivé.",
         )
-
+    if user.organisation_id != organisation_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Organisation invalide.",
+        )
     return user
 
 
@@ -67,6 +73,18 @@ def require_any_role(*allowed_roles: str):
 
     return wrapper
 
+def require_super_admin():
+    """Réservé au super admin uniquement."""
+    async def wrapper(
+        current_user: UserModel = Depends(get_current_user),
+    ) -> UserModel:
+        if not current_user.has_role(RoleUtilisateur.SUPER_ADMIN):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Accès réservé au super administrateur.",
+            )
+        return current_user
+    return wrapper
 
 def require_permission(permission: str):
     """

@@ -5,3 +5,4 @@ class RoleUtilisateur(StrEnum):
     MEDECIN = "medecin"
     ADMIN = "admin"
     SECRETAIRE = "secretaire"
+    SUPER_ADMIN = "super_admin"

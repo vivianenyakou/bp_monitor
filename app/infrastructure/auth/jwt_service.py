@@ -50,3 +50,13 @@ class JWTService:
             return payload
         except JWTError:
             raise InvalidTokenError()
+
+    @staticmethod
+    def construire_payload(user) -> dict:
+        return {
+            "sub": str(user.id),
+            "email": user.email,
+            "roles": user.role_names,
+            "permissions": user.permission_names,
+            "organisation_id": user.organisation_id,
+        }

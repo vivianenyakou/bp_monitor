@@ -5,6 +5,8 @@ from fastapi.responses import JSONResponse
 from app.core.config import get_settings
 from app.core.exceptions import BPMonitorException
 from app.interfaces.routes import alertes, mesures, patients,auth
+from app.interfaces.routes import alertes, auth, mesures, patients, organisations
+
 
 settings = get_settings()
 
@@ -22,8 +24,7 @@ app.include_router(auth.router, prefix=settings.api_prefix)
 app.include_router(mesures.router, prefix=settings.api_prefix)
 app.include_router(alertes.router, prefix=settings.api_prefix)
 app.include_router(patients.router, prefix=settings.api_prefix)
-
-from app.interfaces.routes import alertes, auth, mesures, patients
+app.include_router(organisations.router, prefix=settings.api_prefix)
 
 
 

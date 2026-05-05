@@ -32,8 +32,15 @@ class UserModel(AuditableEntity):
     audits          = relationship("AuditTrailModel", back_populates="user")
     patient_profile = relationship(
         "PatientModel",
+        foreign_keys="[PatientModel.user_id]",
         back_populates="user",
         uselist=False,
+    )
+    organisation = relationship("OrganisationModel", back_populates="utilisateurs")
+    roles = relationship(
+        "RoleModel",
+        secondary=user_roles,
+        back_populates="users",
     )
 
     @property

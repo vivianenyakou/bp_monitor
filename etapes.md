@@ -140,3 +140,15 @@ docker-compose exec api alembic init alembic
 docker-compose exec api alembic revision --autogenerate -m "initial migration"
 docker-compose exec api python -m app.infrastructure.db.seed
 poetry lock
+
+1. Ajouter RoleEnum SUPER_ADMIN
+2. Créer TenantModel
+3. Modifier AuditableEntity — ajouter tenant_id
+4. Modifier UserModel — lier au tenant
+5. Modifier PatientModel — lier au tenant
+6. Migration Alembic
+7. Modifier JWT — ajouter tenant_id
+8. Modifier get_current_user — extraire tenant_id
+9. Use Cases tenant — créer, lister, rejoindre
+10. Routes tenant
+11. Seed mis à jour

@@ -14,6 +14,7 @@ class PatientModel(AuditableEntity):
     address           = Column(String(255), nullable=True)
     emergency_contact = Column(String(255), nullable=True)
     blood_group       = Column(SqlEnum(BloodGroup), nullable=True)
+    medecin_id        = Column(Integer, ForeignKey("users.id"), nullable=True)
 
     # Seuils BP personnalisés (optionnel — remplace les seuils par défaut)
     seuil_systolique_eleve       = Column(Integer, nullable=True)
@@ -24,6 +25,8 @@ class PatientModel(AuditableEntity):
     seuil_diastolique_critique   = Column(Integer, nullable=True)
 
     # Relations
-    user    = relationship("UserModel", back_populates="patient_profile")
+    user    = relationship("UserModel", back_populates="patient_profile" , foreign_keys=[user_id])
+    medecin = relationship("UserModel",foreign_keys=[medecin_id])
+    organisation = relationship("OrganisationModel", back_populates="patients")
     mesures = relationship("MesureModel", back_populates="patient")
     alertes = relationship("AlerteModel", back_populates="patient")

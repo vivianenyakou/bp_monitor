@@ -38,12 +38,7 @@ class LoginUseCase:
                 raise InvalidCredentialsError("Compte désactivé.")
 
             # 4. Construire le payload JWT
-            payload = {
-                "sub": str(user.id),
-                "email": user.email,
-                "roles": user.role_names,
-                "permissions": user.permission_names,
-            }
+            payload =JWTService.construire_payload(user)
 
             # 5. Générer les tokens
             access_token = JWTService.creer_access_token(payload)
