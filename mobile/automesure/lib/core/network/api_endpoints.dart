@@ -1,0 +1,23 @@
+class ApiEndpoints {
+  // Auth
+  static const login           = '/auth/login';
+  static const register        = '/auth/register';
+  static const me              = '/auth/me';
+
+  // Mesures
+  static const mesures         = '/mesures/';
+  static String mesuresPatient(int id) => '/mesures/patient/$id';
+  static String resumeSession(int id, String sessionId) =>
+      '/mesures/resume/$id/$sessionId';
+
+  // Alertes
+  static const alertes         = '/alertes/';
+  static String acquitterAlerte(int id) => '/alertes/$id/acquitter';
+
+  // Patients
+  static const medecins        = '/patients/medecins';
+  static String patient(int id) => '/patients/$id';
+  static const genererInvitation = '/patients/invitation/generer';
+  static String accepterInvitation(int id) =>
+      '/patients/$id/invitation/accepter';
+}

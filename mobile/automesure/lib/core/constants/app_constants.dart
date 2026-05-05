@@ -1,0 +1,17 @@
+class AppConstants {
+  // API
+  static const baseUrl = 'http://localhost:8000/api/v1';
+
+  // Session BP
+  static const totalMesuresSession = 18;
+  static const mesuresParJour      = 6;  // 3 matin + 3 soir
+  static const joursSession        = 3;
+
+  // Seuils BP
+  static const systoliqueNormal    = 130;
+  static const diastolicNormal     = 85;
+  static const systoliqueHigh      = 140;
+  static const diastolicHigh       = 90;
+  static const systoliqueCritique  = 180;
+  static const diastolicCritique   = 110;
+}
