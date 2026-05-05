@@ -1,9 +1,15 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.params import Depends
 
 from app.core.exceptions import BPMonitorException, PatientNotFoundError
-from app.infrastructure.db.session import AsyncSessionFactory
+from app.domain.enums.role_enum import RoleUtilisateur
+from app.infrastructure.db.session import AsyncSessionFactory, get_db_session
+from app.infrastructure.models.auth.user import UserModel
 from app.infrastructure.models.bp.patient import PatientModel
+from app.interfaces.dependencies.authorization import require_any_role
 from app.interfaces.schemas.patient import MettreAJourPatientSchema, PatientSchema
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/patients", tags=["Patients"])
 
@@ -13,7 +19,11 @@ router = APIRouter(prefix="/patients", tags=["Patients"])
     response_model=PatientSchema,
     summary="Obtenir le profil d'un patient",
 )
-async def obtenir_patient(patient_id: int):
+async def obtenir_patient(
+      patient_id: int,
+      current_user: UserModel = Depends(require_any_role(RoleUtilisateur.MEDECIN, RoleUtilisateur.ADMIN, RoleUtilisateur.PATIENT, RoleUtilisateur.SECRETAIRE)),
+      session: AsyncSession = Depends(get_db_session),
+):
     """Retourne le profil médical d'un patient."""
     try:
         async with AsyncSessionFactory() as session:
@@ -30,7 +40,10 @@ async def obtenir_patient(patient_id: int):
     response_model=PatientSchema,
     summary="Mettre à jour le profil d'un patient",
 )
-async def mettre_a_jour_patient(patient_id: int, body: MettreAJourPatientSchema):
+async def mettre_a_jour_patient(
+    patient_id: int, body: MettreAJourPatientSchema,
+    current_user: UserModel = Depends(require_any_role(RoleUtilisateur.MEDECIN, RoleUtilisateur.ADMIN, RoleUtilisateur.PATIENT, RoleUtilisateur.SECRETAIRE)),
+    session: AsyncSession = Depends(get_db_session),):
     """Met à jour le profil médical d'un patient."""
     try:
         async with AsyncSessionFactory() as session:
