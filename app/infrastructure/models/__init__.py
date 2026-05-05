@@ -13,5 +13,5 @@ __all__ = [
     "UserModel", "RoleModel", "PermissionModel",
     "PatientModel", "TokenModel", "AuditTrailModel",
     "MesureModel", "AlerteModel", "OrganisationModel",
-    "role_permissions", "user_roles",
+    "role_permissions", "user_roles", "InvitationModel"
 ]
