@@ -27,7 +27,7 @@ async def lister_alertes(
         use_case = ListerAlertesUseCase()
 
         # Patient — forcer le filtre sur son propre profil
-        if "patient" in current_user.role_names and "admin" not in current_user.role_names:
+        if RoleUtilisateur.PATIENT in current_user.role_names and RoleUtilisateur.ADMIN not in current_user.role_names:
             from sqlalchemy import select
             from app.infrastructure.db.session import AsyncSessionFactory
             from app.infrastructure.models.bp.patient import PatientModel
@@ -43,7 +43,7 @@ async def lister_alertes(
                     patient_id = patient.id
 
         # Médecin — forcer le filtre sur ses patients
-        elif "medecin" in current_user.role_names and "admin" not in current_user.role_names:
+        elif RoleUtilisateur.MEDECIN in current_user.role_names and RoleUtilisateur.ADMIN not in current_user.role_names:
             medecin_id = current_user.id
 
         return await use_case.executer(
