@@ -5,6 +5,7 @@ from app.application.use_cases.multi_tenant.creer_organisation import CreerOrgan
 from app.application.use_cases.multi_tenant.lister_organisantions import ListerOrganisationsUseCase
 from app.core.exceptions import BPMonitorException
 from app.domain.enums.role_enum import RoleUtilisateur
+from app.domain.enums.role_enum import RoleUtilisateur
 from app.interfaces.dependencies.authorization import require_any_role, require_super_admin
 from app.interfaces.schemas.organisation import CreerOrganisationSchema, OrganisationSchema
 
@@ -20,7 +21,7 @@ router = APIRouter(prefix="/organisations", tags=["Organisations"])
 )
 async def creer_organisation(
     body: CreerOrganisationSchema,
-    _=Depends(require_super_admin(), require_any_role(RoleUtilisateur.SUPER_ADMIN)),
+    _=Depends(require_any_role(RoleUtilisateur.SUPER_ADMIN, RoleUtilisateur.ADMIN)),
 ):
     """Crée une nouvelle clinique ou hôpital. Réservé au super admin."""
     try:
@@ -45,7 +46,7 @@ async def creer_organisation(
     summary="Lister les organisations",
 )
 async def lister_organisations(
-    _=Depends(require_super_admin(), require_any_role(RoleUtilisateur.SUPER_ADMIN)),
+    _=Depends(require_any_role(RoleUtilisateur.SUPER_ADMIN, RoleUtilisateur.ADMIN)),
 ):
     try:
         use_case = ListerOrganisationsUseCase()

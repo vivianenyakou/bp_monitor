@@ -3,15 +3,55 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from app.application.dtos.alerte_dto import AcquitterAlerteDTO
 from app.application.use_cases.alerte.acquitter_alerte import AcquitterAlerteUseCase
 from app.application.use_cases.alerte.declencher_alerte import DeclencherAlerteUseCase
+from app.application.use_cases.alerte.lister_alertes import ListerAlertesUseCase
 from app.core.exceptions import BPMonitorException
 from app.domain.enums.role_enum import RoleUtilisateur
 from app.infrastructure.models.auth.user import UserModel
 from app.infrastructure.notifications.notification_service import NotificationService
-from app.interfaces.dependencies.authorization import require_any_role
+from app.interfaces.dependencies.authorization import get_current_user, require_any_role
 from app.interfaces.schemas.alerte import AlerteSchema, AcquitterAlerteSchema
 
 router = APIRouter(prefix="/alertes", tags=["Alertes"])
 
+@router.get(
+    "/",
+    response_model=list[AlerteSchema],
+    summary="Lister les alertes",
+)
+async def lister_alertes(
+    patient_id: int | None = None,
+    medecin_id: int | None = None,
+    current_user: UserModel = Depends(get_current_user),
+):
+    try:
+        use_case = ListerAlertesUseCase()
+
+        # Patient — forcer le filtre sur son propre profil
+        if "patient" in current_user.role_names and "admin" not in current_user.role_names:
+            from sqlalchemy import select
+            from app.infrastructure.db.session import AsyncSessionFactory
+            from app.infrastructure.models.bp.patient import PatientModel
+
+            async with AsyncSessionFactory() as session:
+                result = await session.execute(
+                    select(PatientModel).where(
+                        PatientModel.user_id == current_user.id
+                    )
+                )
+                patient = result.scalar_one_or_none()
+                if patient:
+                    patient_id = patient.id
+
+        # Médecin — forcer le filtre sur ses patients
+        elif "medecin" in current_user.role_names and "admin" not in current_user.role_names:
+            medecin_id = current_user.id
+
+        return await use_case.executer(
+            patient_id=patient_id,
+            medecin_id=medecin_id,
+        )
+    except BPMonitorException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.message)
 
 @router.post(
     "/{alerte_id}/declencher",

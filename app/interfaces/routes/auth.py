@@ -1,14 +1,18 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from app.application.dtos.auth_dto import LoginDTO, RegisterDTO
+from app.application.dtos.auth_dto import CreerUtilisateurDTO, LoginDTO, RegisterDTO
+from app.application.use_cases.auth.app.application.use_cases.auth.creer_utilisateur import CreerUtilisateurUseCase
 from app.application.use_cases.auth.login import LoginUseCase
 from app.application.use_cases.auth.register import RegisterUseCase
+from app.domain.enums.role_enum import RoleUtilisateur
+from app.domain.enums.role_enum import RoleUtilisateur
 from app.core.exceptions import BPMonitorException
 from app.infrastructure.auth.jwt_service import JWTService
 from app.infrastructure.models.auth.user import UserModel
-from app.interfaces.dependencies.authorization import get_current_user
+from app.interfaces.dependencies.authorization import get_current_user, require_any_role
 from app.interfaces.schemas.auth import (
+    CreerUtilisateurSchema,
     LoginSchema,
     RegisterSchema,
     TokenSchema,
@@ -76,3 +80,29 @@ async def me(
         "phone_number": current_user.phone_number,
         "organisation_code": current_user.organisation_id,
     }
+
+@router.post(
+    "/utilisateurs",
+    status_code=status.HTTP_201_CREATED,
+    summary="Créer un utilisateur avec un rôle",
+)
+async def creer_utilisateur(
+    body: CreerUtilisateurSchema,
+    current_user: UserModel = Depends(require_any_role(RoleUtilisateur.ADMIN, RoleUtilisateur.SUPER_ADMIN)),
+):
+    try:
+        use_case = CreerUtilisateurUseCase()
+        dto = CreerUtilisateurDTO(
+            username=body.username,
+            email=body.email,
+            password=body.password,
+            role=body.role,
+            first_name=body.first_name,
+            last_name=body.last_name,
+            phone_number=body.phone_number,
+            organisation_id=body.organisation_id,
+            specialite=body.specialite,
+        )
+        return await use_case.executer(dto)
+    except BPMonitorException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.message)

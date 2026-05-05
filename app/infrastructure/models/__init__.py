@@ -8,6 +8,7 @@ from app.infrastructure.models.auth.role import RoleModel
 from app.infrastructure.models.auth.token import TokenModel
 from app.infrastructure.models.auth.user import UserModel
 from app.infrastructure.models.multi_tenant.organisations import OrganisationModel
+from app.infrastructure.models.multi_tenant.invitation import InvitationModel
 
 __all__ = [
     "UserModel", "RoleModel", "PermissionModel",

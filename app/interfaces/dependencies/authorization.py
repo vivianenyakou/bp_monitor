@@ -78,7 +78,7 @@ def require_super_admin():
     async def wrapper(
         current_user: UserModel = Depends(get_current_user),
     ) -> UserModel:
-        if not current_user.has_role(RoleUtilisateur.SUPER_ADMIN):
+        if not current_user.has_role(RoleUtilisateur.SUPER_ADMIN or RoleUtilisateur.ADMIN):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Accès réservé au super administrateur.",

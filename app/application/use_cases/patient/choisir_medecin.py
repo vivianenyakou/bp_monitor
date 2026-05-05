@@ -35,7 +35,7 @@ class ChoisirMedecinUseCase:
             await session.commit()
 
             return {
-                "message": f"Vous êtes maintenant suivi par le Médecin"
+                "message": f"Vous êtes maintenant suivi par le Médecin "
                            f"{medecin.first_name} {medecin.last_name}.",
                 "medecin_id": medecin.id,
                 "patient_id": patient.id,

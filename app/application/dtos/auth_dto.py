@@ -37,3 +37,15 @@ class UtilisateurDTO:
     roles: list[str]
     permissions: list[str]
     organisation_id: int | None
+
+@dataclass
+class CreerUtilisateurDTO:
+    username: str
+    email: str
+    password: str
+    role: str                          # patient, medecin, admin
+    first_name: str | None = None
+    last_name: str | None = None
+    phone_number: str | None = None
+    organisation_id: int | None = None
+    specialite: str | None = None      # si médecin

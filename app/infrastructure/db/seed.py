@@ -72,6 +72,11 @@ ROLES = [
         "description": "Administrateur — accès complet au système",
         "permissions": [p["name"] for p in PERMISSIONS],  # toutes les permissions
     },
+    {
+        "name": "super_admin",
+        "description": "Super Administrateur — accès complet au système",
+        "permissions": [p["name"] for p in PERMISSIONS],  # toutes les permissions
+    },
 ]
 
 
@@ -82,28 +87,28 @@ ORGANISATIONS = [
         "nom": "Hôpital de Lomé",
         "code": "HOPITAL_LOME",
         "adresse": "Boulevard du 13 Janvier, Lomé",
-        "telephone": "+228 22 00 00 00",
+        "telephone": "+22893330326",
         "email": "contact@hopital-lome.tg",
     },
     {
         "nom": "Clinique Biasa",
         "code": "CLINIQUE_BIASA",
         "adresse": "Lomé, Togo",
-        "telephone": "+228 22 11 11 11",
+        "telephone": "+22898295689",
         "email": "contact@biasa.tg",
     },
     {
         "nom": "Centre de Santé de Kara",
         "code": "CENTRE_KARA",
         "adresse": "Kara, Togo",
-        "telephone": "+228 22 22 22 22",
+        "telephone": "+22893330326",
         "email": "contact@kara.tg",
     },
     {
         "nom": "Hôpital de Sokodé",
         "code": "HOPITAL_SOKODE",
         "adresse": "Sokodé, Togo",
-        "telephone": "+228 22 33 33 33",
+        "telephone": "+22893330326",
         "email": "contact@sokode.tg",
     },
 ]
@@ -308,6 +313,7 @@ async def run_seed() -> None:
             permissions_map = await seed_permissions(session)
             roles_map = await seed_roles(session, permissions_map)
             users_map = await seed_users(session, roles_map)
+            await seed_tenants(session)
             await seed_patients(session, users_map)
 
             await session.commit()
