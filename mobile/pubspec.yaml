@@ -1,0 +1,48 @@
+name: bp_monitor_mobile
+description: Application de suivi de tension artérielle
+
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Navigation
+  go_router: ^13.0.0
+
+  # State management
+  flutter_riverpod: ^2.5.0
+  riverpod_annotation: ^2.3.0
+
+  # HTTP
+  dio: ^5.4.0
+
+  # Storage sécurisé (tokens)
+  flutter_secure_storage: ^9.0.0
+
+  # Graphiques
+  fl_chart: ^0.68.0
+
+  # UI
+  google_fonts: ^6.1.0
+  lucide_icons: ^1.0.0
+
+  # Shared preferences
+  shared_preferences: ^2.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  build_runner: ^2.4.0
+  riverpod_generator: ^2.3.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/icons/
