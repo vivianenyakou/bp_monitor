@@ -1,4 +1,5 @@
 import 'package:automesure/features/home/screens/home_screen.dart';
+import 'package:automesure/features/mesure/screens/saisie_mesure_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -29,6 +30,10 @@ final _router = GoRouter(
     GoRoute(
       path: '/home',
       builder: (_, __) => const HomeScreen(),
+    ),
+     GoRoute(
+      path: '/saisie',
+      builder: (_, __) => const SaisieMesureScreen(),
     ),
     GoRoute(
       path: '/medecin/dashboard',
