@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'core/constants/app_colors.dart';
+import 'features/historique/screens/historique_screen.dart';
 import 'features/onboarding/screens/onboarding_screen.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/auth/screens/register_screen.dart';
@@ -31,9 +32,13 @@ final _router = GoRouter(
       path: '/home',
       builder: (_, __) => const HomeScreen(),
     ),
-     GoRoute(
+    GoRoute(
       path: '/saisie',
       builder: (_, __) => const SaisieMesureScreen(),
+    ),
+    GoRoute(
+      path: '/historique',
+      builder: (_, __) => const HistoriqueScreen(),
     ),
     GoRoute(
       path: '/medecin/dashboard',
