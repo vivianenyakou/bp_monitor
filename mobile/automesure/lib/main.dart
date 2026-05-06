@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'features/onboarding/screens/onboarding_screen.dart';
 import 'core/constants/app_colors.dart';
+import 'features/onboarding/screens/onboarding_screen.dart';
+import 'features/auth/screens/login_screen.dart';
+import 'features/auth/screens/register_screen.dart';
 
 void main() {
-  runApp(const BPMonitorApp());
+  runApp(const ProviderScope(child: BPMonitorApp()));
 }
 
 final _router = GoRouter(
@@ -12,13 +15,26 @@ final _router = GoRouter(
   routes: [
     GoRoute(
       path: '/onboarding',
-      builder: (context, state) => const OnboardingScreen(),
+      builder: (_, __) => const OnboardingScreen(),
     ),
-    // On ajoutera les autres routes au fur et à mesure
     GoRoute(
       path: '/login',
-      builder: (context, state) => const Scaffold(
-        body: Center(child: Text('Login — à venir')),
+      builder: (_, __) => const LoginScreen(),
+    ),
+    GoRoute(
+      path: '/register',
+      builder: (_, __) => const RegisterScreen(),
+    ),
+    GoRoute(
+      path: '/home',
+      builder: (_, __) => const Scaffold(
+        body: Center(child: Text('Home — à venir')),
+      ),
+    ),
+    GoRoute(
+      path: '/medecin/dashboard',
+      builder: (_, __) => const Scaffold(
+        body: Center(child: Text('Dashboard médecin — à venir')),
       ),
     ),
   ],
@@ -30,12 +46,10 @@ class BPMonitorApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'BP Monitor',
+      title: 'AutoMesure de la Pression Artérielle',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.primary,
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
         useMaterial3: true,
       ),
       routerConfig: _router,
