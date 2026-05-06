@@ -1,3 +1,4 @@
+import 'package:automesure/features/alerte/screens/alertes_screen.dart';
 import 'package:automesure/features/home/screens/home_screen.dart';
 import 'package:automesure/features/mesure/screens/saisie_mesure_screen.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'core/constants/app_colors.dart';
 import 'features/historique/screens/historique_screen.dart';
+import 'features/medecin/screens/dashboard_medecin_screen.dart';
 import 'features/onboarding/screens/onboarding_screen.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/auth/screens/register_screen.dart';
@@ -41,9 +43,23 @@ final _router = GoRouter(
       builder: (_, __) => const HistoriqueScreen(),
     ),
     GoRoute(
+      path: '/alertes',
+      builder: (_, __) => const AlertesScreen(),
+    ),
+    GoRoute(
       path: '/medecin/dashboard',
+      builder: (_, __) => const DashboardMedecinScreen(),
+    ),
+    GoRoute(
+      path: '/medecin/patients',
       builder: (_, __) => const Scaffold(
-        body: Center(child: Text('Dashboard médecin — à venir')),
+        body: Center(child: Text('Patients — à venir')),
+      ),
+    ),
+    GoRoute(
+      path: '/medecin/stats',
+      builder: (_, __) => const Scaffold(
+        body: Center(child: Text('Stats — à venir')),
       ),
     ),
   ],

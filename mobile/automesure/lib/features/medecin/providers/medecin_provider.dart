@@ -1,0 +1,121 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/network/api_client.dart';
+import '../../../core/network/api_endpoints.dart';
+import '../../alerte/providers/alertes_provider.dart';
+import '../../auth/providers/auth_provider.dart';
+
+class PatientMedecin {
+  final int id;
+  final int userId;
+  final String? gender;
+  final String? birthDate;
+  final String? bloodGroup;
+  final int? medecinId;
+
+  const PatientMedecin({
+    required this.id,
+    required this.userId,
+    this.gender,
+    this.birthDate,
+    this.bloodGroup,
+    this.medecinId,
+  });
+
+  factory PatientMedecin.fromJson(Map<String, dynamic> json) => PatientMedecin(
+        id:         json['id'],
+        userId:     json['user_id'],
+        gender:     json['gender'],
+        birthDate:  json['birth_date'],
+        bloodGroup: json['blood_group'],
+        medecinId:  json['medecin_id'],
+      );
+}
+
+class MedecinState {
+  final bool isLoading;
+  final String? error;
+  final List<PatientMedecin> patients;
+  final List<Alerte> alertesCritiques;
+  final List<Alerte> alertesASurveiller;
+
+  const MedecinState({
+    this.isLoading          = false,
+    this.error,
+    this.patients           = const [],
+    this.alertesCritiques   = const [],
+    this.alertesASurveiller = const [],
+  });
+
+  MedecinState copyWith({
+    bool? isLoading,
+    String? error,
+    List<PatientMedecin>? patients,
+    List<Alerte>? alertesCritiques,
+    List<Alerte>? alertesASurveiller,
+  }) =>
+      MedecinState(
+        isLoading:          isLoading          ?? this.isLoading,
+        error:              error,
+        patients:           patients           ?? this.patients,
+        alertesCritiques:   alertesCritiques   ?? this.alertesCritiques,
+        alertesASurveiller: alertesASurveiller ?? this.alertesASurveiller,
+      );
+
+  int get nombrePatients       => patients.length;
+  int get nombreCritiques      => alertesCritiques.length;
+  int get nombreASurveiller    => alertesASurveiller.length;
+}
+
+class MedecinNotifier extends StateNotifier<MedecinState> {
+  final ApiClient _api;
+
+  MedecinNotifier(this._api) : super(const MedecinState());
+
+  Future<void> charger() async {
+    state = state.copyWith(isLoading: true);
+    try {
+      // Charger les alertes
+      final alertesResp = await _api.get(ApiEndpoints.alertes);
+      final alertes = (alertesResp.data as List)
+          .map((a) => Alerte.fromJson(a))
+          .toList();
+
+      final critiques = alertes
+          .where((a) => a.estCritique && !a.estAquittee)
+          .toList();
+
+      final aSurveiller = alertes
+          .where((a) => a.estAvertissement && !a.estAquittee)
+          .toList();
+
+      state = state.copyWith(
+        isLoading:          false,
+        alertesCritiques:   critiques,
+        alertesASurveiller: aSurveiller,
+      );
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<void> acquitter(int alerteId, String par) async {
+    try {
+      await _api.patch(
+        ApiEndpoints.acquitterAlerte(alerteId),
+        data: {'acquittee_par': par},
+      );
+      await charger();
+    } catch (e) {
+      state = state.copyWith(error: 'Erreur lors de l\'acquittement.');
+    }
+  }
+
+  Future<void> genererInvitation() async {
+    await _api.post(ApiEndpoints.genererInvitation);
+  }
+}
+
+final medecinProvider =
+    StateNotifierProvider<MedecinNotifier, MedecinState>((ref) {
+  return MedecinNotifier(ref.watch(apiClientProvider));
+});
