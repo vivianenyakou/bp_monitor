@@ -1,3 +1,4 @@
+import 'package:automesure/features/home/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -27,9 +28,7 @@ final _router = GoRouter(
     ),
     GoRoute(
       path: '/home',
-      builder: (_, __) => const Scaffold(
-        body: Center(child: Text('Home — à venir')),
-      ),
+      builder: (_, __) => const HomeScreen(),
     ),
     GoRoute(
       path: '/medecin/dashboard',
