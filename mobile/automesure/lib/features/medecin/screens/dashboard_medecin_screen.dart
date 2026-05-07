@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../auth/models/auth_model.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/medecin_provider.dart';
 import '../widgets/stats_medecin_card.dart';
@@ -218,6 +219,11 @@ class _DashboardMedecinScreenState
                       ),
                     ),
                     const SizedBox(height: 80),
+                    // Menu Admin — visible uniquement si admin ou super_admin
+                    if (user?.hasAdminAccess == true) ...[
+                      const SizedBox(height: 24),
+                      _buildSectionAdmin(context, user!),
+                    ],
                   ]),
                 ),
               ),
@@ -355,4 +361,113 @@ class _DashboardMedecinScreenState
       }
     }
   }
+}
+
+Widget _buildSectionAdmin(BuildContext context, UserModel user) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      // Header section
+      Row(
+        children: [
+          const Text('⚙️'),
+          const SizedBox(width: 8),
+          Text(
+            'Administration',
+            style: AppTextStyles.heading3.copyWith(
+              color: AppColors.primary,
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+
+      // Carte menus admin
+      Container(
+        decoration: BoxDecoration(
+          color:        Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color:     Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+
+            // Gérer organisations
+            if (user.canGererOrganisations)
+              _buildAdminMenuItem(
+                icon:     Icons.business_outlined,
+                label:    'Gérer les organisations',
+                sublabel: 'Cliniques et hôpitaux',
+                onTap:    () => context.go('/admin/organisations'),
+              ),
+
+            // Gérer utilisateurs
+            if (user.canGererUtilisateurs) ...[
+              const Divider(height: 1),
+              _buildAdminMenuItem(
+                icon:     Icons.people_outline,
+                label:    'Gérer les utilisateurs',
+                sublabel: 'Patients, médecins, admins',
+                onTap:    () => context.go('/admin/utilisateurs'),
+              ),
+            ],
+
+            // Gérer rôles — super admin uniquement
+            if (user.isSuperAdmin) ...[
+              const Divider(height: 1),
+              _buildAdminMenuItem(
+                icon:     Icons.admin_panel_settings_outlined,
+                label:    'Gérer les rôles',
+                sublabel: 'Permissions et accès',
+                color:    AppColors.elevee,
+                onTap:    () => context.go('/admin/roles'),
+              ),
+            ],
+          ],
+        ),
+      ),
+    ],
+  );
+}
+
+Widget _buildAdminMenuItem({
+  required IconData    icon,
+  required String      label,
+  required String      sublabel,
+  required VoidCallback onTap,
+  Color?               color,
+}) {
+  return ListTile(
+    onTap: onTap,
+    leading: Container(
+      width:  40,
+      height: 40,
+      decoration: BoxDecoration(
+        color:        (color ?? AppColors.primary).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Icon(
+        icon,
+        color: color ?? AppColors.primary,
+        size:  20,
+      ),
+    ),
+    title: Text(
+      label,
+      style: AppTextStyles.body.copyWith(
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+    subtitle: Text(sublabel, style: AppTextStyles.caption),
+    trailing: const Icon(
+      Icons.arrow_forward_ios,
+      size:  16,
+      color: AppColors.textSecondary,
+    ),
+  );
 }

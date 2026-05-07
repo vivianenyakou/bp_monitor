@@ -20,4 +20,10 @@ class ApiEndpoints {
   static const genererInvitation = '/patients/invitation/generer';
   static String accepterInvitation(int id) =>
       '/patients/$id/invitation/accepter';
+  static String choisirMedecin(int patientId) =>
+      '/patients/$patientId/choisir-medecin';
+  // Ajouter
+  static const organisations    = '/organisations/';
+  static const utilisateurs     = '/auth/utilisateurs';
+  static const creerUtilisateur = '/auth/utilisateurs';
 }

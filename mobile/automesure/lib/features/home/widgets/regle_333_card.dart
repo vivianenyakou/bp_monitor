@@ -49,7 +49,7 @@ class Regle333Card extends StatelessWidget {
             Container(
               width: 40,
               height: 40,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.primarySurface,
                 shape: BoxShape.circle,
               ),
@@ -75,7 +75,7 @@ class Regle333Card extends StatelessWidget {
                         width: 8,
                         height: 8,
                         margin: const EdgeInsets.symmetric(horizontal: 2),
-                        decoration: BoxDecoration(
+                        decoration:BoxDecoration(
                           color: done
                               ? AppColors.primary
                               : AppColors.border,

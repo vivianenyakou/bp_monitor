@@ -40,6 +40,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.primary,
+        elevation: 0,
+        title: const Text('Accueil'),
+      ),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: _charger,
@@ -65,7 +70,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                           ),
                           Text(
-                            'Suivi tension',
+                            'Suivi de la tension artérielle',
                             style: AppTextStyles.heading2.copyWith(
                               color: Colors.white,
                             ),
@@ -77,7 +82,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         child: Container(
                           width: 44,
                           height: 44,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: Colors.white24,
                             shape: BoxShape.circle,
                           ),

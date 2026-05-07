@@ -56,7 +56,7 @@ class ProgressionCard extends StatelessWidget {
               value: progression.clamp(0.0, 1.0),
               minHeight: 10,
               backgroundColor: AppColors.primarySurface,
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
             ),
           ),
         ],

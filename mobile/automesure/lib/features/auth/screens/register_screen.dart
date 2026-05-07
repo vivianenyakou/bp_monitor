@@ -76,7 +76,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 Text('Créer un compte', style: AppTextStyles.heading1),
                 const SizedBox(height: 8),
                 Text(
-                  'Rejoignez BP Monitor',
+                  'Rejoignez Auto-Mésure santé',
                   style: AppTextStyles.bodySecondary,
                 ),
                 const SizedBox(height: 32),
@@ -164,7 +164,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                 // Code organisation
                 _buildField(
-                  label: 'Code organisation (optionnel)',
+                  label: 'Structure Médicale (optionnel)',
                   controller: _orgCtrl,
                   hint: 'Ex: HOPITAL_LOME',
                   icon: Icons.business_outlined,

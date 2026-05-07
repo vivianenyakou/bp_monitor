@@ -1,4 +1,5 @@
 {
     "python-envs.defaultEnvManager": "ms-python.python:poetry",
-    "python-envs.defaultPackageManager": "ms-python.python:poetry"
+    "python-envs.defaultPackageManager": "ms-python.python:poetry",
+    "cmake.sourceDirectory": "D:/Projets/review/bp_monitor/mobile/automesure/linux"
 }

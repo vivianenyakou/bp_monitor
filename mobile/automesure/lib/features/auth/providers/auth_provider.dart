@@ -104,7 +104,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   String _parseError(dynamic e) {
     if (e.toString().contains('401')) return 'Identifiants incorrects.';
     if (e.toString().contains('409')) return 'Email déjà utilisé.';
-    if (e.toString().contains('404')) return 'Organisation introuvable.';
+    if (e.toString().contains('404')) return 'Structure médicale introuvable.';
     return 'Une erreur est survenue.';
   }
 }

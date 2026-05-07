@@ -155,7 +155,7 @@ class DerniereMesureCard extends StatelessWidget {
           if (mesure!.pouls != null)
             Row(
               children: [
-                Icon(Icons.favorite,
+                const Icon(Icons.favorite,
                     color: AppColors.normale, size: 16),
                 const SizedBox(width: 4),
                 Text(

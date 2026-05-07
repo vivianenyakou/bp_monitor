@@ -1,0 +1,373 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_text_styles.dart';
+import '../../auth/providers/auth_provider.dart';
+import '../../home/widgets/bp_bottom_nav.dart';
+import '../providers/profil_provider.dart';
+import '../widgets/profil_header.dart';
+import '../widgets/profil_info_card.dart';
+import '../widgets/choisir_medecin_sheet.dart';
+
+class ProfilScreen extends ConsumerStatefulWidget {
+  const ProfilScreen({super.key});
+
+  @override
+  ConsumerState<ProfilScreen> createState() => _ProfilScreenState();
+}
+
+class _ProfilScreenState extends ConsumerState<ProfilScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _charger());
+  }
+
+  Future<void> _charger() async {
+    final user = ref.read(authProvider).user;
+    if (user != null) {
+      await ref.read(profilProvider.notifier).charger(user.id);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state  = ref.watch(profilProvider);
+    final user   = ref.watch(authProvider).user;
+
+    if (user == null) return const SizedBox();
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Header vert
+            ProfilHeader(user: user),
+
+            // Contenu scrollable
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: _charger,
+                color:     AppColors.primary,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      // Success message
+                      if (state.success != null)
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          margin:  const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            color:        AppColors.normaleLight,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.check_circle,
+                                  color: AppColors.normale),
+                              const SizedBox(width: 8),
+                              Text(
+                                state.success!,
+                                style: AppTextStyles.body.copyWith(
+                                  color: AppColors.normale,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                      // Infos personnelles
+                      ProfilInfoCard(
+                        title: 'Informations personnelles',
+                        items: [
+                          ProfilInfoItem(
+                            icon:  Icons.person_outline,
+                            label: 'Nom complet',
+                            value: user.nomComplet.isNotEmpty
+                                ? user.nomComplet
+                                : user.username,
+                          ),
+                          ProfilInfoItem(
+                            icon:  Icons.email_outlined,
+                            label: 'Email',
+                            value: user.email,
+                          ),
+                          ProfilInfoItem(
+                            icon:  Icons.phone_outlined,
+                            label: 'Téléphone',
+                            value: user.phoneNumber,
+                          ),
+                        ],
+                        onEdit: () => _modifierProfil(context, state, user.id),
+                      ),
+
+                      // Infos médicales
+                      ProfilInfoCard(
+                        title: 'Informations médicales',
+                        items: [
+                          ProfilInfoItem(
+                            icon:  Icons.wc_outlined,
+                            label: 'Genre',
+                            value: state.profil?.gender,
+                          ),
+                          ProfilInfoItem(
+                            icon:  Icons.cake_outlined,
+                            label: 'Date de naissance',
+                            value: state.profil?.birthDate,
+                          ),
+                          ProfilInfoItem(
+                            icon:  Icons.bloodtype_outlined,
+                            label: 'Groupe sanguin',
+                            value: state.profil?.bloodGroup,
+                          ),
+                          ProfilInfoItem(
+                            icon:  Icons.location_on_outlined,
+                            label: 'Adresse',
+                            value: state.profil?.address,
+                          ),
+                          ProfilInfoItem(
+                            icon:  Icons.emergency_outlined,
+                            label: 'Contact d\'urgence',
+                            value: state.profil?.emergencyContact,
+                          ),
+                        ],
+                        onEdit: () => _modifierProfil(context, state, user.id),
+                      ),
+
+                      // Médecin référent
+                      ProfilInfoCard(
+                        title: 'Médecin référent',
+                        items: [
+                          ProfilInfoItem(
+                            icon:  Icons.medical_services_outlined,
+                            label: 'Médecin',
+                            value: state.profil?.medecinId != null
+                                ? 'Médecin assigné (ID: ${state.profil!.medecinId})'
+                                : 'Aucun médecin assigné',
+                          ),
+                        ],
+                        onEdit: () => _choisirMedecin(context, user.id),
+                      ),
+
+                      // Bouton choisir médecin
+                      if (state.profil?.medecinId == null)
+                        SizedBox(
+                          width:  double.infinity,
+                          height: 48,
+                          child: OutlinedButton.icon(
+                            onPressed: () => _choisirMedecin(context, user.id),
+                            icon: const Icon(
+                              Icons.person_add_outlined,
+                              color: AppColors.primary,
+                            ),
+                            label: Text(
+                              'Choisir mon médecin',
+                              style: AppTextStyles.body.copyWith(
+                                color: AppColors.primary,
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: AppColors.primary),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
+                      const SizedBox(height: 16),
+
+                      // Déconnexion
+                      SizedBox(
+                        width:  double.infinity,
+                        height: 48,
+                        child: OutlinedButton.icon(
+                          onPressed: () => _deconnecter(context),
+                          icon: const Icon(
+                            Icons.logout,
+                            color: AppColors.critique,
+                          ),
+                          label: Text(
+                            'Se déconnecter',
+                            style: AppTextStyles.body.copyWith(
+                              color: AppColors.critique,
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: AppColors.critique),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 80),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: const BPBottomNav(currentIndex: 0),
+    );
+  }
+
+  void _choisirMedecin(BuildContext context, int patientId) {
+    showModalBottomSheet(
+      context:       context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => ChoisirMedecinSheet(patientId: patientId),
+    );
+  }
+
+  void _modifierProfil(BuildContext context, ProfilState state, int patientId) {
+    final genderCtrl    = TextEditingController(text: state.profil?.gender);
+    final addressCtrl   = TextEditingController(text: state.profil?.address);
+    final urgenceCtrl   = TextEditingController(
+      text: state.profil?.emergencyContact,
+    );
+
+    showModalBottomSheet(
+      context:            context,
+      isScrollControlled: true,
+      backgroundColor:    Colors.transparent,
+      builder: (_) => Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: const BoxDecoration(
+          color:        Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft:  Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        padding: EdgeInsets.only(
+          left:   24,
+          right:  24,
+          top:    24,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Modifier le profil', style: AppTextStyles.heading3),
+            const SizedBox(height: 24),
+
+            _buildEditField('Genre', genderCtrl, Icons.wc_outlined),
+            const SizedBox(height: 12),
+            _buildEditField('Adresse', addressCtrl, Icons.location_on_outlined),
+            const SizedBox(height: 12),
+            _buildEditField(
+              'Contact d\'urgence',
+              urgenceCtrl,
+              Icons.emergency_outlined,
+            ),
+            const Spacer(),
+
+            SizedBox(
+              width:  double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: () async {
+                  final ok = await ref.read(profilProvider.notifier)
+                      .mettreAJour(
+                    patientId:        patientId,
+                    gender:           genderCtrl.text,
+                    address:          addressCtrl.text,
+                    emergencyContact: urgenceCtrl.text,
+                  );
+                  if (ok && context.mounted) Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  'Enregistrer',
+                  style: AppTextStyles.body.copyWith(
+                    color:      Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEditField(
+    String label,
+    TextEditingController ctrl,
+    IconData icon,
+  ) =>
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: AppTextStyles.body.copyWith(
+            fontWeight: FontWeight.w600,
+          )),
+          const SizedBox(height: 6),
+          TextField(
+            controller: ctrl,
+            decoration: InputDecoration(
+              prefixIcon: Icon(icon, color: AppColors.textSecondary),
+              filled:     true,
+              fillColor:  AppColors.background,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide:   BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                  color: AppColors.primary, width: 2,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+
+  Future<void> _deconnecter(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: const Text('Se déconnecter'),
+        content: const Text('Voulez-vous vous déconnecter ?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child:     const Text('Annuler'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.critique,
+            ),
+            child: const Text(
+              'Déconnecter',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await ref.read(authProvider.notifier).logout();
+      if (context.mounted) context.go('/login');
+    }
+  }
+}

@@ -16,15 +16,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   int _currentPage = 0;
 
   final List<OnboardingData> _pages = [
-    OnboardingData(
+    const OnboardingData(
       emoji: '🩺',
-      title: 'Bienvenue sur BP Monitor',
+      title: 'Bienvenue sur Auto-mesure Santé',
       description:
           'Votre assistant de suivi de tension artérielle.\n'
           'Apprenez à mesurer votre tension correctement.',
       color: AppColors.primary,
     ),
-    OnboardingData(
+    const OnboardingData(
       emoji: '🪑',
       title: 'Préparez-vous',
       description:
@@ -39,7 +39,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         '✅ Pas de café ni cigarette 30 min avant',
       ],
     ),
-    OnboardingData(
+    const OnboardingData(
       emoji: '💪',
       title: 'Placez le brassard',
       description:
@@ -53,7 +53,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         '✅ Bras posé sur une surface plane',
       ],
     ),
-    OnboardingData(
+    const OnboardingData(
       emoji: '📊',
       title: 'Lisez les chiffres',
       description:
@@ -67,7 +67,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ],
       showBpExample: true,
     ),
-    OnboardingData(
+    const OnboardingData(
       emoji: '📅',
       title: 'La règle des 3-3-3',
       description:
@@ -81,7 +81,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ],
       showRegle333: true,
     ),
-    OnboardingData(
+    const OnboardingData(
       emoji: '🎯',
       title: 'Comprenez vos résultats',
       description: 'Voici comment interpréter vos valeurs.',

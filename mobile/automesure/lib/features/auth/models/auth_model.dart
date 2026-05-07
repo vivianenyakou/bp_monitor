@@ -1,3 +1,5 @@
+import 'package:automesure/core/constants/app_role.dart';
+
 class TokenModel {
   final String accessToken;
   final String refreshToken;
@@ -51,10 +53,26 @@ class UserModel {
         organisationId: json['organisation_id'],
       );
 
-  bool get isMedecin => roles.contains('medecin');
-  bool get isPatient => roles.contains('patient');
-  bool get isAdmin   => roles.contains('admin');
+  bool get isMedecin => roles.contains(AppRole.MEDECIN);
+  bool get isPatient => roles.contains(AppRole.PATIENT);
+  bool get isAdmin   => roles.contains(AppRole.ADMIN);
+  bool get isSuperAdmin   => roles.contains(AppRole.SUPER_ADMIN);
+
 
   String get nomComplet =>
       '${firstName ?? ''} ${lastName ?? ''}'.trim();
+   // Peut accéder aux menus admin
+  bool get hasAdminAccess =>
+      isAdmin || isSuperAdmin;
+
+  // Peut gérer les organisations
+  bool get canGererOrganisations =>
+      isAdmin || isSuperAdmin;
+
+  // Peut gérer les utilisateurs
+  bool get canGererUtilisateurs =>
+      isAdmin || isSuperAdmin;
+
+  // Peut gérer les rôles
+  bool get canGererRoles => isSuperAdmin;
 }

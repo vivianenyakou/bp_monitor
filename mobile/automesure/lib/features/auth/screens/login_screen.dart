@@ -32,13 +32,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           _passCtrl.text,
         );
     if (ok && mounted) {
-      final user = ref.read(authProvider).user;
-      if (user?.isMedecin == true) {
-        context.go('/medecin/dashboard');
-      } else {
-        context.go('/home');
+        final user = ref.read(authProvider).user;
+
+        if (
+            user?.isSuperAdmin == true || user?.isAdmin == true ) {
+          context.go('/admin');
+        }
+        else if (user?.isMedecin == true) {
+          context.go('/medecin/dashboard');
+        }
+        else {
+          context.go('/home');
+        }
       }
-    }
   }
 
   @override
@@ -62,7 +68,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   child: Container(
                     width: 80,
                     height: 80,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: AppColors.primarySurface,
                       shape: BoxShape.circle,
                     ),

@@ -56,7 +56,7 @@ async def creer_mesure(body: CreerMesureSchema,
     response_model=list[MesureSchema],
     summary="Lister les mesures d'un patient",
 )
-async def lister_mesures(patient_id: int, current_user: UserModel = Depends(require_any_role(RoleUtilisateur.MEDECIN, RoleUtilisateur.ADMIN, RoleUtilisateur.PATIENT, RoleUtilisateur.SECRETAIRE)), session: AsyncSession = Depends(get_db_session)):
+async def lister_mesures(patient_id: int, current_user: UserModel = Depends(require_any_role(RoleUtilisateur.MEDECIN, RoleUtilisateur.ADMIN, RoleUtilisateur.PATIENT, RoleUtilisateur.SECRETAIRE , RoleUtilisateur.SUPER_ADMIN)), session: AsyncSession = Depends(get_db_session)):
     """Retourne toutes les mesures d'un patient, triées par date décroissante."""
     try:
         use_case = ListerMesuresUseCase()
@@ -70,7 +70,7 @@ async def lister_mesures(patient_id: int, current_user: UserModel = Depends(requ
     response_model=ResumeSessionSchema,
     summary="Obtenir le résumé d'une session",
 )
-async def obtenir_resume(patient_id: int, session_id: str, current_user: UserModel = Depends(require_any_role(RoleUtilisateur.MEDECIN, RoleUtilisateur.ADMIN, RoleUtilisateur.PATIENT, RoleUtilisateur.SECRETAIRE)), session: AsyncSession = Depends(get_db_session)):
+async def obtenir_resume(patient_id: int, session_id: str, current_user: UserModel = Depends(require_any_role(RoleUtilisateur.MEDECIN, RoleUtilisateur.ADMIN, RoleUtilisateur.PATIENT, RoleUtilisateur.SECRETAIRE , RoleUtilisateur.SUPER_ADMIN)), session: AsyncSession = Depends(get_db_session)):
     """
     Retourne les moyennes d'une session (partielle ou complète).
     Inclut les moyennes globale, matin, soir et par jour.

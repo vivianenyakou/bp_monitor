@@ -65,7 +65,7 @@ async def choisir_medecin(
     summary="Générer un code d'invitation",
 )
 async def generer_invitation(
-    current_user: UserModel = Depends(require_any_role(RoleUtilisateur.MEDECIN, RoleUtilisateur.ADMIN)),
+    current_user: UserModel = Depends(require_any_role(RoleUtilisateur.MEDECIN, RoleUtilisateur.ADMIN, RoleUtilisateur.SUPER_ADMIN)),
 ):
     """Le médecin génère un code d'invitation valable 48h."""
     try:
@@ -86,7 +86,7 @@ async def generer_invitation(
 async def accepter_invitation(
     patient_id: int,
     body: AccepterInvitationSchema,
-    current_user: UserModel = Depends(require_any_role(RoleUtilisateur.PATIENT, RoleUtilisateur.ADMIN)),
+    current_user: UserModel = Depends(require_any_role(RoleUtilisateur.PATIENT, RoleUtilisateur.ADMIN, RoleUtilisateur.SUPER_ADMIN)),
 ):
     """Le patient entre le code d'invitation pour se lier à un médecin."""
     try:
@@ -107,7 +107,7 @@ async def accepter_invitation(
 )
 async def obtenir_patient(
       patient_id: int,
-      current_user: UserModel = Depends(require_any_role(RoleUtilisateur.MEDECIN, RoleUtilisateur.ADMIN, RoleUtilisateur.PATIENT, RoleUtilisateur.SECRETAIRE)),
+      current_user: UserModel = Depends(require_any_role(RoleUtilisateur.MEDECIN, RoleUtilisateur.ADMIN, RoleUtilisateur.PATIENT, RoleUtilisateur.SECRETAIRE , RoleUtilisateur.SUPER_ADMIN)),
       session: AsyncSession = Depends(get_db_session),
 ):
     """Retourne le profil médical d'un patient."""
@@ -128,7 +128,7 @@ async def obtenir_patient(
 )
 async def mettre_a_jour_patient(
     patient_id: int, body: MettreAJourPatientSchema,
-    current_user: UserModel = Depends(require_any_role(RoleUtilisateur.MEDECIN, RoleUtilisateur.ADMIN, RoleUtilisateur.PATIENT, RoleUtilisateur.SECRETAIRE)),
+    current_user: UserModel = Depends(require_any_role(RoleUtilisateur.MEDECIN, RoleUtilisateur.ADMIN, RoleUtilisateur.PATIENT, RoleUtilisateur.SECRETAIRE , RoleUtilisateur.SUPER_ADMIN)),
     session: AsyncSession = Depends(get_db_session),):
     """Met à jour le profil médical d'un patient."""
     try:
