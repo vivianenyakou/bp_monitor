@@ -5,6 +5,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../home/widgets/bp_bottom_nav.dart';
+import '../../medecin/providers/medecin_provider.dart';
 import '../providers/profil_provider.dart';
 import '../widgets/profil_header.dart';
 import '../widgets/profil_info_card.dart';
@@ -26,38 +27,40 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
 
   Future<void> _charger() async {
     final user = ref.read(authProvider).user;
-    if (user != null) {
+    if (user == null) return;
+    if (user.isPatient) {
       await ref.read(profilProvider.notifier).charger(user.id);
+    }
+    if (user.isMedecin) {
+      await ref.read(medecinProvider.notifier).charger();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final state  = ref.watch(profilProvider);
-    final user   = ref.watch(authProvider).user;
-
+    final user = ref.watch(authProvider).user;
     if (user == null) return const SizedBox();
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
-        elevation: 0,
+        elevation:       0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => context.go('/home'),
+          icon:      const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          onPressed: () => context.go(
+            user.isMedecin ? '/medecin/dashboard' : '/home',
+          ),
         ),
-        title: Text('Mon profil', style: AppTextStyles.heading2.copyWith(
-          color: AppColors.primary,
-        )),
+        title: Text(
+          'Mon profil',
+          style: AppTextStyles.heading2.copyWith(color: AppColors.primary),
+        ),
       ),
       body: SafeArea(
         child: Column(
           children: [
-            // Header vert
             ProfilHeader(user: user),
-
-            // Contenu scrollable
             Expanded(
               child: RefreshIndicator(
                 onRefresh: _charger,
@@ -67,155 +70,12 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
-                      // Success message
-                      if (state.success != null)
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          margin:  const EdgeInsets.only(bottom: 12),
-                          decoration: BoxDecoration(
-                            color:        AppColors.normaleLight,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.check_circle,
-                                  color: AppColors.normale),
-                              const SizedBox(width: 8),
-                              Text(
-                                state.success!,
-                                style: AppTextStyles.body.copyWith(
-                                  color: AppColors.normale,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                      if (user.isPatient)  ..._corpsPatient(context, user),
+                      if (user.isMedecin)  ..._corpsMedecin(context, user),
+                      if (user.isAdmin || user.isSuperAdmin) ..._corpsAdmin(context, user),
 
-                      // Infos personnelles
-                      ProfilInfoCard(
-                        title: 'Informations personnelles',
-                        items: [
-                          ProfilInfoItem(
-                            icon:  Icons.person_outline,
-                            label: 'Nom complet',
-                            value: user.nomComplet.isNotEmpty
-                                ? user.nomComplet
-                                : user.username,
-                          ),
-                          ProfilInfoItem(
-                            icon:  Icons.email_outlined,
-                            label: 'Email',
-                            value: user.email,
-                          ),
-                          ProfilInfoItem(
-                            icon:  Icons.phone_outlined,
-                            label: 'Téléphone',
-                            value: user.phoneNumber,
-                          ),
-                        ],
-                        onEdit: () => _modifierProfil(context, state, user.id),
-                      ),
-
-                      // Infos médicales
-                      ProfilInfoCard(
-                        title: 'Informations médicales',
-                        items: [
-                          ProfilInfoItem(
-                            icon:  Icons.wc_outlined,
-                            label: 'Genre',
-                            value: state.profil?.gender,
-                          ),
-                          ProfilInfoItem(
-                            icon:  Icons.cake_outlined,
-                            label: 'Date de naissance',
-                            value: state.profil?.birthDate,
-                          ),
-                          ProfilInfoItem(
-                            icon:  Icons.bloodtype_outlined,
-                            label: 'Groupe sanguin',
-                            value: state.profil?.bloodGroup,
-                          ),
-                          ProfilInfoItem(
-                            icon:  Icons.location_on_outlined,
-                            label: 'Adresse',
-                            value: state.profil?.address,
-                          ),
-                          ProfilInfoItem(
-                            icon:  Icons.emergency_outlined,
-                            label: 'Contact d\'urgence',
-                            value: state.profil?.emergencyContact,
-                          ),
-                        ],
-                        onEdit: () => _modifierProfil(context, state, user.id),
-                      ),
-
-                      // Médecin référent
-                      ProfilInfoCard(
-                        title: 'Médecin référent',
-                        items: [
-                          ProfilInfoItem(
-                            icon:  Icons.medical_services_outlined,
-                            label: 'Médecin',
-                            value: state.profil?.medecinNomComplet ??
-                                (state.profil?.medecinId != null
-                                    ? 'Médecin assigné'
-                                    : 'Aucun médecin assigné'),
-                          ),
-                        ],
-                        onEdit: () => _choisirMedecin(context, user.id),
-                      ),
-
-                      // Bouton choisir médecin
-                      if (state.profil?.medecinId == null)
-                        SizedBox(
-                          width:  double.infinity,
-                          height: 48,
-                          child: OutlinedButton.icon(
-                            onPressed: () => _choisirMedecin(context, user.id),
-                            icon: const Icon(
-                              Icons.person_add_outlined,
-                              color: AppColors.primary,
-                            ),
-                            label: Text(
-                              'Choisir mon médecin',
-                              style: AppTextStyles.body.copyWith(
-                                color: AppColors.primary,
-                              ),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: AppColors.primary),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          ),
-                        ),
                       const SizedBox(height: 16),
-
-                      // Déconnexion
-                      SizedBox(
-                        width:  double.infinity,
-                        height: 48,
-                        child: OutlinedButton.icon(
-                          onPressed: () => _deconnecter(context),
-                          icon: const Icon(
-                            Icons.logout,
-                            color: AppColors.critique,
-                          ),
-                          label: Text(
-                            'Se déconnecter',
-                            style: AppTextStyles.body.copyWith(
-                              color: AppColors.critique,
-                            ),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: AppColors.critique),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      ),
+                      _boutonDeconnexion(context),
                       const SizedBox(height: 80),
                     ],
                   ),
@@ -229,21 +89,244 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
     );
   }
 
+  // ── PATIENT ──────────────────────────────────────────────────────────────
+
+  List<Widget> _corpsPatient(BuildContext context, user) {
+    final state = ref.watch(profilProvider);
+
+    return [
+      if (state.success != null)
+        Container(
+          padding: const EdgeInsets.all(12),
+          margin:  const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color:        AppColors.normaleLight,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.check_circle, color: AppColors.normale),
+              const SizedBox(width: 8),
+              Text(state.success!, style: AppTextStyles.body.copyWith(
+                color: AppColors.normale,
+              )),
+            ],
+          ),
+        ),
+
+      ProfilInfoCard(
+        title: 'Informations personnelles',
+        items: [
+          ProfilInfoItem(
+            icon:  Icons.person_outline,
+            label: 'Nom complet',
+            value: user.nomComplet.isNotEmpty ? user.nomComplet : user.username,
+          ),
+          ProfilInfoItem(icon: Icons.email_outlined,   label: 'Email',      value: user.email),
+          ProfilInfoItem(icon: Icons.phone_outlined,   label: 'Téléphone',  value: user.phoneNumber),
+        ],
+        onEdit: () => _modifierProfilPatient(context, state, user.id),
+      ),
+
+      ProfilInfoCard(
+        title: 'Informations médicales',
+        items: [
+          ProfilInfoItem(icon: Icons.wc_outlined,        label: 'Genre',              value: state.profil?.gender),
+          ProfilInfoItem(icon: Icons.cake_outlined,       label: 'Date de naissance',  value: state.profil?.birthDate),
+          ProfilInfoItem(icon: Icons.bloodtype_outlined,  label: 'Groupe sanguin',     value: state.profil?.bloodGroup),
+          ProfilInfoItem(icon: Icons.location_on_outlined,label: 'Adresse',            value: state.profil?.address),
+          ProfilInfoItem(icon: Icons.emergency_outlined,  label: 'Contact d\'urgence', value: state.profil?.emergencyContact),
+        ],
+        onEdit: () => _modifierProfilPatient(context, state, user.id),
+      ),
+
+      ProfilInfoCard(
+        title: 'Médecin référent',
+        items: [
+          ProfilInfoItem(
+            icon:  Icons.medical_services_outlined,
+            label: 'Médecin',
+            value: state.profil?.medecinNomComplet ??
+                (state.profil?.medecinId != null ? 'Médecin assigné' : 'Aucun médecin assigné'),
+          ),
+        ],
+        onEdit: () => _choisirMedecin(context, user.id),
+      ),
+
+      if (state.profil?.medecinId == null)
+        SizedBox(
+          width:  double.infinity,
+          height: 48,
+          child: OutlinedButton.icon(
+            onPressed: () => _choisirMedecin(context, user.id),
+            icon:  const Icon(Icons.person_add_outlined, color: AppColors.primary),
+            label: Text('Choisir mon médecin',
+                style: AppTextStyles.body.copyWith(color: AppColors.primary)),
+            style: OutlinedButton.styleFrom(
+              side:  const BorderSide(color: AppColors.primary),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+        ),
+    ];
+  }
+
+  // ── MÉDECIN ───────────────────────────────────────────────────────────────
+
+  List<Widget> _corpsMedecin(BuildContext context, user) {
+    final medecinState = ref.watch(medecinProvider);
+
+    return [
+      ProfilInfoCard(
+        title: 'Informations personnelles',
+        items: [
+          ProfilInfoItem(
+            icon:  Icons.person_outline,
+            label: 'Nom complet',
+            value: user.nomComplet.isNotEmpty
+                ? 'Dr. ${user.nomComplet}'
+                : 'Dr. ${user.username}',
+          ),
+          ProfilInfoItem(icon: Icons.email_outlined, label: 'Email',     value: user.email),
+          ProfilInfoItem(icon: Icons.phone_outlined, label: 'Téléphone', value: user.phoneNumber),
+        ],
+      ),
+
+      ProfilInfoCard(
+        title: 'Activité',
+        items: [
+          ProfilInfoItem(
+            icon:  Icons.people_outline,
+            label: 'Patients suivis',
+            value: '${medecinState.nombrePatients} patient(s)',
+          ),
+          ProfilInfoItem(
+            icon:  Icons.notifications_active_outlined,
+            label: 'Alertes critiques',
+            value: medecinState.nombreCritiques > 0
+                ? '${medecinState.nombreCritiques} alerte(s) en cours'
+                : 'Aucune alerte critique',
+          ),
+          ProfilInfoItem(
+            icon:  Icons.visibility_outlined,
+            label: 'À surveiller',
+            value: medecinState.nombreASurveiller > 0
+                ? '${medecinState.nombreASurveiller} patient(s)'
+                : 'Aucun',
+          ),
+        ],
+      ),
+
+      if (user.organisationId != null)
+        ProfilInfoCard(
+          title: 'Organisation',
+          items: [
+            ProfilInfoItem(
+              icon:  Icons.local_hospital_outlined,
+              label: 'ID Organisation',
+              value: 'Org. #${user.organisationId}',
+            ),
+          ],
+        ),
+    ];
+  }
+
+  // ── ADMIN / SUPER ADMIN ───────────────────────────────────────────────────
+
+  List<Widget> _corpsAdmin(BuildContext context, user) {
+    return [
+      ProfilInfoCard(
+        title: 'Informations personnelles',
+        items: [
+          ProfilInfoItem(
+            icon:  Icons.person_outline,
+            label: 'Nom complet',
+            value: user.nomComplet.isNotEmpty ? user.nomComplet : user.username,
+          ),
+          ProfilInfoItem(icon: Icons.email_outlined, label: 'Email',     value: user.email),
+          ProfilInfoItem(icon: Icons.phone_outlined, label: 'Téléphone', value: user.phoneNumber),
+        ],
+      ),
+
+      ProfilInfoCard(
+        title: 'Accès & permissions',
+        items: [
+          ProfilInfoItem(
+            icon:  Icons.shield_outlined,
+            label: 'Rôle',
+            value: user.roles.map((r) => r.toUpperCase()).join(', '),
+          ),
+          if (user.organisationId != null)
+            ProfilInfoItem(
+              icon:  Icons.local_hospital_outlined,
+              label: 'Organisation',
+              value: 'Org. #${user.organisationId}',
+            ),
+          ProfilInfoItem(
+            icon:  Icons.admin_panel_settings_outlined,
+            label: 'Gestion utilisateurs',
+            value: user.canGererUtilisateurs ? 'Autorisé' : 'Non autorisé',
+          ),
+          ProfilInfoItem(
+            icon:  Icons.business_outlined,
+            label: 'Gestion organisations',
+            value: user.canGererOrganisations ? 'Autorisé' : 'Non autorisé',
+          ),
+          ProfilInfoItem(
+            icon:  Icons.policy_outlined,
+            label: 'Gestion des rôles',
+            value: user.canGererRoles ? 'Autorisé' : 'Non autorisé',
+          ),
+        ],
+      ),
+
+      SizedBox(
+        width:  double.infinity,
+        height: 48,
+        child: ElevatedButton.icon(
+          onPressed: () => context.go('/admin'),
+          icon:  const Icon(Icons.settings, color: Colors.white),
+          label: Text('Espace administrateur',
+              style: AppTextStyles.body.copyWith(color: Colors.white)),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        ),
+      ),
+    ];
+  }
+
+  // ── ACTIONS COMMUNES ──────────────────────────────────────────────────────
+
+  Widget _boutonDeconnexion(BuildContext context) => SizedBox(
+        width:  double.infinity,
+        height: 48,
+        child: OutlinedButton.icon(
+          onPressed: () => _deconnecter(context),
+          icon:  const Icon(Icons.logout, color: AppColors.critique),
+          label: Text('Se déconnecter',
+              style: AppTextStyles.body.copyWith(color: AppColors.critique)),
+          style: OutlinedButton.styleFrom(
+            side:  const BorderSide(color: AppColors.critique),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        ),
+      );
+
   void _choisirMedecin(BuildContext context, int patientId) {
     showModalBottomSheet(
-      context:       context,
+      context:            context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor:    Colors.transparent,
       builder: (_) => ChoisirMedecinSheet(patientId: patientId),
     );
   }
 
-  void _modifierProfil(BuildContext context, ProfilState state, int patientId) {
-    final genderCtrl    = TextEditingController(text: state.profil?.gender);
-    final addressCtrl   = TextEditingController(text: state.profil?.address);
-    final urgenceCtrl   = TextEditingController(
-      text: state.profil?.emergencyContact,
-    );
+  void _modifierProfilPatient(BuildContext context, ProfilState state, int patientId) {
+    final genderCtrl  = TextEditingController(text: state.profil?.gender);
+    final addressCtrl = TextEditingController(text: state.profil?.address);
+    final urgenceCtrl = TextEditingController(text: state.profil?.emergencyContact);
 
     showModalBottomSheet(
       context:            context,
@@ -269,25 +352,18 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
           children: [
             Text('Modifier le profil', style: AppTextStyles.heading3),
             const SizedBox(height: 24),
-
-            _buildEditField('Genre', genderCtrl, Icons.wc_outlined),
+            _editField('Genre',             genderCtrl,  Icons.wc_outlined),
             const SizedBox(height: 12),
-            _buildEditField('Adresse', addressCtrl, Icons.location_on_outlined),
+            _editField('Adresse',           addressCtrl, Icons.location_on_outlined),
             const SizedBox(height: 12),
-            _buildEditField(
-              'Contact d\'urgence',
-              urgenceCtrl,
-              Icons.emergency_outlined,
-            ),
+            _editField('Contact d\'urgence', urgenceCtrl, Icons.emergency_outlined),
             const Spacer(),
-
             SizedBox(
               width:  double.infinity,
               height: 52,
               child: ElevatedButton(
                 onPressed: () async {
-                  final ok = await ref.read(profilProvider.notifier)
-                      .mettreAJour(
+                  final ok = await ref.read(profilProvider.notifier).mettreAJour(
                     patientId:        patientId,
                     gender:           genderCtrl.text,
                     address:          addressCtrl.text,
@@ -297,17 +373,12 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: Text(
-                  'Enregistrer',
-                  style: AppTextStyles.body.copyWith(
-                    color:      Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: Text('Enregistrer',
+                    style: AppTextStyles.body.copyWith(
+                      color: Colors.white, fontWeight: FontWeight.bold,
+                    )),
               ),
             ),
           ],
@@ -316,17 +387,11 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
     );
   }
 
-  Widget _buildEditField(
-    String label,
-    TextEditingController ctrl,
-    IconData icon,
-  ) =>
+  Widget _editField(String label, TextEditingController ctrl, IconData icon) =>
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: AppTextStyles.body.copyWith(
-            fontWeight: FontWeight.w600,
-          )),
+          Text(label, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
           const SizedBox(height: 6),
           TextField(
             controller: ctrl,
@@ -340,9 +405,7 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(
-                  color: AppColors.primary, width: 2,
-                ),
+                borderSide: const BorderSide(color: AppColors.primary, width: 2),
               ),
             ),
           ),
@@ -353,25 +416,18 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: const Text('Se déconnecter'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title:   const Text('Se déconnecter'),
         content: const Text('Voulez-vous vous déconnecter ?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child:     const Text('Annuler'),
+            child: const Text('Annuler'),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.critique,
-            ),
-            child: const Text(
-              'Déconnecter',
-              style: TextStyle(color: Colors.white),
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.critique),
+            child: const Text('Déconnecter', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
