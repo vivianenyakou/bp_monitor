@@ -12,6 +12,7 @@ class ProfilPatient {
   final String? emergencyContact;
   final String? bloodGroup;
   final int? medecinId;
+  final String? medecinNomComplet;
 
   const ProfilPatient({
     required this.id,
@@ -22,6 +23,7 @@ class ProfilPatient {
     this.emergencyContact,
     this.bloodGroup,
     this.medecinId,
+    this.medecinNomComplet,
   });
 
   factory ProfilPatient.fromJson(Map<String, dynamic> json) => ProfilPatient(
@@ -33,6 +35,7 @@ class ProfilPatient {
         emergencyContact: json['emergency_contact'],
         bloodGroup:       json['blood_group'],
         medecinId:        json['medecin_id'],
+        medecinNomComplet: json['medecin_nom_complet'],
       );
 }
 

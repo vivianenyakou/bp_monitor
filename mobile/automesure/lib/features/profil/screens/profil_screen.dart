@@ -156,9 +156,10 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
                           ProfilInfoItem(
                             icon:  Icons.medical_services_outlined,
                             label: 'Médecin',
-                            value: state.profil?.medecinId != null
-                                ? 'Médecin assigné (ID: ${state.profil!.medecinId})'
-                                : 'Aucun médecin assigné',
+                            value: state.profil?.medecinNomComplet ??
+                                (state.profil?.medecinId != null
+                                    ? 'Médecin assigné'
+                                    : 'Aucun médecin assigné'),
                           ),
                         ],
                         onEdit: () => _choisirMedecin(context, user.id),
