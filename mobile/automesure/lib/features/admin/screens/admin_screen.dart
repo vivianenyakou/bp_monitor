@@ -61,7 +61,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
       body: const Center(
         child: Text('Espace administrateur'),
       ),
-     bottomNavigationBar: const BPAdminBottomNav(currentIndex: 0),
+     bottomNavigationBar: const BPBottomNav(currentIndex: 0),
     );
   }
 }

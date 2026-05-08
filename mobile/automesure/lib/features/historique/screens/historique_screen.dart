@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -39,6 +40,10 @@ class _HistoriqueScreenState extends ConsumerState<HistoriqueScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          onPressed: () => context.go('/home'),
+        ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -46,7 +51,10 @@ class _HistoriqueScreenState extends ConsumerState<HistoriqueScreen> {
               '${state.mesures.length} mesures ce mois',
               style: AppTextStyles.caption,
             ),
-            Text('Historique', style: AppTextStyles.heading2),
+            Text('Historique', style: AppTextStyles.heading2.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.bold,
+            )),
           ],
         ),
       ),

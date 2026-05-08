@@ -25,15 +25,18 @@ class ObtenirResumeUseCase:
     async def executer(self, patient_id: int, session_id: str) -> ResumeSessionDTO:
         async with AsyncSessionFactory() as session:
 
-            # 1. Vérifier le patient
-            patient = await session.get(PatientModel, patient_id)
+            # 1. Vérifier le patient (patient_id est le user_id)
+            lookup = await session.execute(
+                select(PatientModel).where(PatientModel.user_id == patient_id)
+            )
+            patient = lookup.scalar_one_or_none()
             if not patient:
                 raise PatientNotFoundError()
 
             # 2. Récupérer toutes les mesures de la session
             result = await session.execute(
                 select(MesureModel).where(
-                    MesureModel.patient_id == patient_id,
+                    MesureModel.patient_id == patient.id,
                     MesureModel.session_id == session_id,
                 )
             )

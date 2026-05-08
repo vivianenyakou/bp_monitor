@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -34,9 +35,16 @@ class _AlertesScreenState extends ConsumerState<AlertesScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          onPressed: () => context.go('/home'),
+        ),
         title: Row(
           children: [
-            Text('Alertes', style: AppTextStyles.heading2),
+            Text('Alertes', style: AppTextStyles.heading2.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.bold,
+            )),
             if (state.critiques.isNotEmpty) ...[
               const SizedBox(width: 8),
               Container(

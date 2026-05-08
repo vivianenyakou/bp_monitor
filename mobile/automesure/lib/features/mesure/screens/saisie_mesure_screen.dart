@@ -34,7 +34,10 @@ class SaisieMesureScreen extends ConsumerWidget {
               'Mesure ${state.numeroMesure}/3 aujourd\'hui',
               style: AppTextStyles.caption,
             ),
-            Text('Nouvelle mesure', style: AppTextStyles.heading3),
+            Text('Nouvelle mesure', style: AppTextStyles.heading3.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.bold,
+            )),
           ],
         ),
       ),

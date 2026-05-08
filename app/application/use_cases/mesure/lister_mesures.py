@@ -13,13 +13,17 @@ class ListerMesuresUseCase:
     async def executer(self, patient_id: int) -> list[MesureDTO]:
         async with AsyncSessionFactory() as session:
 
-            patient = await session.get(PatientModel, patient_id)
+            # patient_id est le user_id
+            lookup = await session.execute(
+                select(PatientModel).where(PatientModel.user_id == patient_id)
+            )
+            patient = lookup.scalar_one_or_none()
             if not patient:
                 raise PatientNotFoundError()
 
             result = await session.execute(
                 select(MesureModel)
-                .where(MesureModel.patient_id == patient_id)
+                .where(MesureModel.patient_id == patient.id)
                 .order_by(MesureModel.prise_le.desc())
             )
             models = result.scalars().all()

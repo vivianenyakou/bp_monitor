@@ -5,6 +5,8 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../auth/models/auth_model.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../home/widgets/bp_bottom_nav.dart';
+import '../../profil/widgets/profil_menu_button.dart';
 import '../providers/medecin_provider.dart';
 import '../widgets/stats_medecin_card.dart';
 import '../widgets/patient_critique_card.dart';
@@ -44,7 +46,7 @@ class _DashboardMedecinScreenState
               // Header
               SliverToBoxAdapter(
                 child: Container(
-                  color: AppColors.primary,
+                  color: AppColors.background,
                   padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -57,13 +59,13 @@ class _DashboardMedecinScreenState
                                 ? 'Dr. ${user!.nomComplet}'
                                 : 'Dr. ${user?.username ?? ''}',
                             style: AppTextStyles.body.copyWith(
-                              color: Colors.white70,
+                              color: AppColors.textSecondary,
                             ),
                           ),
                           Text(
                             'Tableau de bord',
                             style: AppTextStyles.heading2.copyWith(
-                              color: Colors.white,
+                              color: AppColors.textPrimary,
                             ),
                           ),
                         ],
@@ -88,21 +90,8 @@ class _DashboardMedecinScreenState
                               ),
                             ),
                           // Avatar
-                          GestureDetector(
-                            onTap: () => context.go('/profil'),
-                            child: Container(
-                              width:  44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: Colors.white24,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.person,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
+                         const ProfilMenuButton(),
+
                         ],
                       ),
                     ],
@@ -196,8 +185,17 @@ class _DashboardMedecinScreenState
                         ),
                       ),
 
+                    // Code invitation actif
+                    if (state.aCodeActif) ...[
+                      const SizedBox(height: 24),
+                      _CodeInvitationCard(
+                        code:      state.codeInvitation!,
+                        expireLE:  state.invitationExpireLE!,
+                      ),
+                    ],
+
                     // Bouton invitation
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
                     OutlinedButton.icon(
                       onPressed: () => _genererInvitation(context),
                       icon: const Icon(
@@ -205,7 +203,7 @@ class _DashboardMedecinScreenState
                         color: AppColors.primary,
                       ),
                       label: Text(
-                        'Inviter un patient',
+                        state.aCodeActif ? 'Générer un nouveau code' : 'Inviter un patient',
                         style: AppTextStyles.body.copyWith(
                           color: AppColors.primary,
                         ),
@@ -232,42 +230,7 @@ class _DashboardMedecinScreenState
         ),
       ),
 
-      // Bottom nav médecin
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: 3,
-        backgroundColor: Colors.white,
-        indicatorColor: AppColors.primarySurface,
-        onDestinationSelected: (i) {
-          switch (i) {
-            case 0: context.go('/medecin/dashboard'); break;
-            case 1: context.go('/medecin/patients');  break;
-            case 2: context.go('/medecin/stats');     break;
-            case 3: context.go('/medecin/dashboard'); break;
-          }
-        },
-        destinations: const [
-          NavigationDestination(
-            icon:         Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home, color: AppColors.primary),
-            label:        'Accueil',
-          ),
-          NavigationDestination(
-            icon:         Icon(Icons.people_outline),
-            selectedIcon: Icon(Icons.people, color: AppColors.primary),
-            label:        'Patients',
-          ),
-          NavigationDestination(
-            icon:         Icon(Icons.bar_chart_outlined),
-            selectedIcon: Icon(Icons.bar_chart, color: AppColors.primary),
-            label:        'Stats',
-          ),
-          NavigationDestination(
-            icon:         Icon(Icons.notifications_outlined),
-            selectedIcon: Icon(Icons.notifications, color: AppColors.primary),
-            label:        'Alertes',
-          ),
-        ],
-      ),
+      bottomNavigationBar: const BPBottomNav(currentIndex: 0),
     );
   }
 
@@ -323,33 +286,52 @@ class _DashboardMedecinScreenState
   Future<void> _genererInvitation(BuildContext context) async {
     try {
       await ref.read(medecinProvider.notifier).genererInvitation();
-      if (context.mounted) {
-        showDialog(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: const Text('✅ Code généré'),
-            content: const Text(
-              'Le code d\'invitation a été généré.\n'
-              'Consultez le Swagger pour récupérer le code.',
-            ),
-            actions: [
-              ElevatedButton(
-                onPressed: () => Navigator.pop(ctx),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+      if (!context.mounted) return;
+      final state = ref.read(medecinProvider);
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Text('Code d\'invitation généré'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                decoration: BoxDecoration(
+                  color:        AppColors.primarySurface,
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Text(
-                  'OK',
-                  style: TextStyle(color: Colors.white),
+                child: Text(
+                  state.codeInvitation ?? '',
+                  style: AppTextStyles.heading2.copyWith(
+                    color:       AppColors.primary,
+                    letterSpacing: 6,
+                    fontWeight:  FontWeight.bold,
+                  ),
                 ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Valable 48h — communiquez ce code à votre patient.',
+                style: AppTextStyles.bodySecondary,
+                textAlign: TextAlign.center,
               ),
             ],
           ),
-        );
-      }
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+              ),
+              child: const Text('OK', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      );
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -360,6 +342,68 @@ class _DashboardMedecinScreenState
         );
       }
     }
+  }
+}
+
+class _CodeInvitationCard extends StatelessWidget {
+  final String code;
+  final DateTime expireLE;
+
+  const _CodeInvitationCard({required this.code, required this.expireLE});
+
+  @override
+  Widget build(BuildContext context) {
+    final heuresRestantes = expireLE.difference(DateTime.now()).inHours;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color:        AppColors.primarySurface,
+        borderRadius: BorderRadius.circular(16),
+        border:       Border.all(color: AppColors.primary, width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.vpn_key, color: AppColors.primary, size: 18),
+              const SizedBox(width: 8),
+              Text(
+                'Code d\'invitation actif',
+                style: AppTextStyles.body.copyWith(
+                  color:      AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                'Expire dans ${heuresRestantes}h',
+                style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Center(
+            child: Text(
+              code,
+              style: AppTextStyles.heading2.copyWith(
+                color:         AppColors.primary,
+                letterSpacing: 8,
+                fontWeight:    FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Center(
+            child: Text(
+              'Communiquez ce code à votre patient',
+              style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

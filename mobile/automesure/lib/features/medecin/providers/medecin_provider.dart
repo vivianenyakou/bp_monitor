@@ -37,6 +37,8 @@ class MedecinState {
   final List<PatientMedecin> patients;
   final List<Alerte> alertesCritiques;
   final List<Alerte> alertesASurveiller;
+  final String? codeInvitation;
+  final DateTime? invitationExpireLE;
 
   const MedecinState({
     this.isLoading          = false,
@@ -44,7 +46,14 @@ class MedecinState {
     this.patients           = const [],
     this.alertesCritiques   = const [],
     this.alertesASurveiller = const [],
+    this.codeInvitation,
+    this.invitationExpireLE,
   });
+
+  bool get aCodeActif =>
+      codeInvitation != null &&
+      invitationExpireLE != null &&
+      invitationExpireLE!.isAfter(DateTime.now());
 
   MedecinState copyWith({
     bool? isLoading,
@@ -52,6 +61,8 @@ class MedecinState {
     List<PatientMedecin>? patients,
     List<Alerte>? alertesCritiques,
     List<Alerte>? alertesASurveiller,
+    String? codeInvitation,
+    DateTime? invitationExpireLE,
   }) =>
       MedecinState(
         isLoading:          isLoading          ?? this.isLoading,
@@ -59,6 +70,8 @@ class MedecinState {
         patients:           patients           ?? this.patients,
         alertesCritiques:   alertesCritiques   ?? this.alertesCritiques,
         alertesASurveiller: alertesASurveiller ?? this.alertesASurveiller,
+        codeInvitation:     codeInvitation     ?? this.codeInvitation,
+        invitationExpireLE: invitationExpireLE ?? this.invitationExpireLE,
       );
 
   int get nombrePatients       => patients.length;
@@ -111,7 +124,12 @@ class MedecinNotifier extends StateNotifier<MedecinState> {
   }
 
   Future<void> genererInvitation() async {
-    await _api.post(ApiEndpoints.genererInvitation);
+    final response = await _api.post(ApiEndpoints.genererInvitation);
+    final data = response.data as Map<String, dynamic>;
+    state = state.copyWith(
+      codeInvitation:     data['code'],
+      invitationExpireLE: DateTime.parse(data['expire_le']),
+    );
   }
 }
 
