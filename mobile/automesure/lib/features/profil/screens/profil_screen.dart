@@ -40,6 +40,17 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          onPressed: () => context.go('/home'),
+        ),
+        title: Text('Mon profil', style: AppTextStyles.heading2.copyWith(
+          color: AppColors.primary,
+        )),
+      ),
       body: SafeArea(
         child: Column(
           children: [

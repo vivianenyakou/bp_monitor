@@ -39,3 +39,39 @@ class MettreAJourPatientSchema(BaseModel):
             }
         }
     }
+
+class PatientListeSchema(BaseModel):
+    """Schéma complet pour la liste des patients."""
+    id:                int
+    user_id:           int
+    nom_complet:       str
+    username:          str
+    email:             str
+    telephone:         str | None
+    gender:            str | None
+    birth_date:        str | None
+    blood_group:       str | None
+    address:           str | None
+    emergency_contact: str | None
+    medecin_id:        int | None
+    organisation_id:   int | None
+    is_active:         bool
+    created_on:        str | None
+    seuils:            dict
+
+    model_config = {"from_attributes": True}
+
+
+class MedecinListeSchema(BaseModel):
+    """Schéma complet pour la liste des médecins."""
+    id:              int
+    nom_complet:     str
+    username:        str
+    email:           str
+    telephone:       str | None
+    organisation_id: int | None
+    is_active:       bool
+    roles:           list[str]
+    created_on:      str | None
+
+    model_config = {"from_attributes": True}

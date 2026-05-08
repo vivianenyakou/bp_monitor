@@ -16,9 +16,60 @@ from app.interfaces.schemas.invitation import AccepterInvitationSchema, ChoisirM
 from app.interfaces.schemas.patient import MettreAJourPatientSchema, PatientSchema
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.interfaces.schemas.patient import PatientListeSchema, MedecinListeSchema
+from app.application.use_cases.patient.lister_patients import ListerPatientsUseCase
+from app.application.use_cases.patient.lister_medecins import ListerMedecinsUseCase
+
 
 router = APIRouter(prefix="/patients", tags=["Patients"])
 
+@router.get(
+    "/",
+    response_model=list[PatientListeSchema],
+    summary="Lister tous les patients",
+)
+async def lister_patients(
+    organisation_id: int | None = None,
+    current_user: UserModel = Depends(require_any_role("medecin", "admin", "super_admin")),
+):
+    """
+    Liste tous les patients avec leurs informations complètes.
+    Filtre par organisation si organisation_id est fourni.
+    Réservé aux médecins et admins.
+    """
+    try:
+        use_case = ListerPatientsUseCase()
+        return await use_case.executer(
+            organisation_id=organisation_id or current_user.organisation_id
+            if not current_user.has_role("super_admin")
+            else organisation_id,
+        )
+    except BPMonitorException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.message)
+
+
+@router.get(
+    "/medecins/liste",
+    response_model=list[MedecinListeSchema],
+    summary="Lister tous les médecins",
+)
+async def lister_medecins_complet(
+    organisation_id: int | None = None,
+    current_user: UserModel = Depends(require_any_role("patient", "medecin", "admin", "super_admin")),
+):
+    """
+    Liste tous les médecins disponibles.
+    Filtre par organisation si organisation_id est fourni.
+    """
+    try:
+        use_case = ListerMedecinsUseCase()
+        return await use_case.executer(
+            organisation_id=organisation_id or current_user.organisation_id
+            if not current_user.has_role("super_admin")
+            else organisation_id,
+        )
+    except BPMonitorException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.message)
 @router.get(
     "/medecins",
     response_model=list[MedecinSchema],
