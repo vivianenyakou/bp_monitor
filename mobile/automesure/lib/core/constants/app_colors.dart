@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // Couleurs principales — vert médical
-  static const primary        = Color(0xFF1B6B3A);
-  static const primaryLight   = Color(0xFF4CAF6E);
+  static const primary  = Color(0xFF1B5E20);
+  static const primaryLight   =Color(0xFF2E7D32);
   static const primarySurface = Color(0xFFE8F5ED);
 
   // Catégories BP
@@ -17,9 +17,10 @@ class AppColors {
   static const critiqueLight  = Color(0xFFFFCDD2);
 
   // Neutres
-  static const background     = Color(0xFFF5F5F5);
+  static const background     = Color(0xFFF5F7FA);
   static const surface        = Color(0xFFFFFFFF);
-  static const textPrimary    = Color(0xFF1A1A1A);
-  static const textSecondary  = Color(0xFF757575);
-  static const border         = Color(0xFFE0E0E0);
+  static const textPrimary    =  Color(0xFF1A1D2E);
+  static const textSecondary  = Color(0xFF6B7280);
+  static const border         = Color(0xFFE8E8E8);
+
 }

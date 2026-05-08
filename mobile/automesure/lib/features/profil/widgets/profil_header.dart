@@ -11,7 +11,7 @@ class ProfilHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.primary,
+      color: AppColors.background,
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
       child: Column(
         children: [
@@ -22,13 +22,13 @@ class ProfilHeader extends StatelessWidget {
             decoration: BoxDecoration(
               color:  Colors.white24,
               shape:  BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 3),
+              border: Border.all(color: AppColors.primary, width: 3),
             ),
             child: Center(
               child: Text(
                 _initiales(user),
                 style: AppTextStyles.heading1.copyWith(
-                  color:    Colors.white,
+                  color:    AppColors.textPrimary,
                   fontSize: 32,
                 ),
               ),
@@ -41,14 +41,14 @@ class ProfilHeader extends StatelessWidget {
             user.nomComplet.isNotEmpty
                 ? user.nomComplet
                 : user.username,
-            style: AppTextStyles.heading3.copyWith(color: Colors.white),
+            style: AppTextStyles.heading3.copyWith(color: AppColors.textPrimary),
           ),
           const SizedBox(height: 4),
 
           // Email
           Text(
             user.email,
-            style: AppTextStyles.caption.copyWith(color: Colors.white70),
+            style: AppTextStyles.caption.copyWith(color: AppColors.textPrimary),
           ),
           const SizedBox(height: 8),
 
@@ -61,13 +61,13 @@ class ProfilHeader extends StatelessWidget {
                 horizontal: 12, vertical: 4,
               ),
               decoration: BoxDecoration(
-                color:        Colors.white24,
+                color:        AppColors.primary,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
                 role.toUpperCase(),
                 style: AppTextStyles.caption.copyWith(
-                  color:      Colors.white,
+                  color:      AppColors.normaleLight,
                   fontWeight: FontWeight.bold,
                 ),
               ),

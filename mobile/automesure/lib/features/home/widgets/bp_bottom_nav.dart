@@ -47,3 +47,48 @@ class BPBottomNav extends StatelessWidget {
     );
   }
 }
+
+class BPAdminBottomNav extends StatelessWidget {
+  final int currentIndex;
+
+  const BPAdminBottomNav({super.key, required this.currentIndex});
+
+  @override
+  Widget build(BuildContext context) {
+    return NavigationBar(
+      selectedIndex: currentIndex,
+      backgroundColor: AppColors.background,
+      indicatorColor: AppColors.primarySurface,
+      onDestinationSelected: (i) {
+        switch (i) {
+          case 0: context.go('/admin');       break;
+          case 1: context.go('/admin/roles');     break;
+          case 2: context.go('/admin/organisations'); break;
+          case 3: context.go('/admin/utilisateurs');    break;
+        }
+      },
+      destinations: const [
+        NavigationDestination(
+          icon: Icon(Icons.home_outlined),
+          selectedIcon: Icon(Icons.home, color: AppColors.primary),
+          label: 'Accueil',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.policy),
+          selectedIcon: Icon(Icons.policy, color: AppColors.primary),
+          label: 'Rôles',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.local_hospital),
+          selectedIcon: Icon(Icons.local_hospital, color: AppColors.primary),
+          label: 'Organisations',
+        ),
+          NavigationDestination(
+            icon: Icon(Icons.person),
+          selectedIcon: Icon(Icons.person, color: AppColors.primary),
+          label: 'Utilisateurs',
+        ),
+      ],
+    );
+  }
+}

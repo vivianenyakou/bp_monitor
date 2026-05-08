@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../profil/widgets/profil_menu_button.dart';
 import '../providers/home_provider.dart';
 import '../widgets/derniere_mesure_card.dart';
 import '../widgets/progression_card.dart';
@@ -40,23 +41,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.primary,
-        elevation: 0,
-        title: const Text('Accueil'),
-      ),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: _charger,
-          color: AppColors.primary,
           child: CustomScrollView(
             slivers: [
 
               // Header vert
               SliverToBoxAdapter(
                 child: Container(
-                  color: AppColors.primary,
-                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+                  color: AppColors.background,
+                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -64,34 +59,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Bonjour, ${user?.firstName ?? user?.username ?? ''}',
-                            style: AppTextStyles.body.copyWith(
-                              color: Colors.white70,
+                            'Bienvenue, ${[
+                              user?.firstName,
+                              user?.lastName,
+                            ].where((e) => e != null && e.isNotEmpty).join(' ')}',                            style: AppTextStyles.body.copyWith(
+                              color: AppColors.primary,
                             ),
                           ),
                           Text(
-                            'Suivi de la tension artérielle',
+                            'Suivi tension',
                             style: AppTextStyles.heading2.copyWith(
-                              color: Colors.white,
+                              color: AppColors.primary,
                             ),
                           ),
                         ],
                       ),
-                      GestureDetector(
-                        onTap: () => context.go('/profil'),
-                        child: Container(
-                          width: 44,
-                          height: 44,
-                          decoration: const BoxDecoration(
-                            color: Colors.white24,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.person,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
+                      const ProfilMenuButton(),
                     ],
                   ),
                 ),
@@ -102,13 +85,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 padding: const EdgeInsets.all(16),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
-
-                    // Dernière mesure
-                    state.isLoading
+              // Card dernière mesure — remonte sur le header
+                    Transform.translate(
+                      offset: const Offset(0, -12),
+                      child:state.isLoading
                         ? const Center(child: CircularProgressIndicator())
                         : DerniereMesureCard(
                             mesure: state.derniereMesure,
                           ),
+                    ),
+
                     const SizedBox(height: 16),
 
                     // Progression du jour
@@ -129,15 +115,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
 
       // Bouton flottant — Nouvelle mesure
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.go('/saisie'),
-        backgroundColor: AppColors.primary,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: Text(
-          'Nouvelle mesure',
-          style: AppTextStyles.body.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+      floatingActionButton: SizedBox(
+        height: 56,
+        width: 350,
+        child: FloatingActionButton.extended(
+          onPressed: () => context.go('/saisie'),
+          backgroundColor: AppColors.primary,
+          icon: const Icon(Icons.add, color: Colors.white),
+          label: Text(
+            'Nouvelle mesure',
+            style: AppTextStyles.body.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
           ),
         ),
       ),

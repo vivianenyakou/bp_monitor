@@ -15,7 +15,7 @@ class ApiEndpoints {
   static String acquitterAlerte(int id) => '/alertes/$id/acquitter';
 
   // Patients
-  static const medecins        = '/patients/medecins';
+  static const medecins        = '/patients/medecins/liste';
   static String patient(int id) => '/patients/$id';
   static const genererInvitation = '/patients/invitation/generer';
   static String accepterInvitation(int id) =>
