@@ -14,6 +14,8 @@ class PatientSchema(BaseModel):
     blood_group: BloodGroup | None
     address: str | None
     emergency_contact: str | None
+    medecin_id: int | None = None
+    medecin_nom_complet: str | None = None
 
     model_config = {"from_attributes": True}
 

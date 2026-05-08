@@ -15,6 +15,7 @@ from app.interfaces.dependencies.authorization import get_current_user, require_
 from app.interfaces.schemas.invitation import AccepterInvitationSchema, ChoisirMedecinSchema, InvitationSchema, MedecinSchema
 from app.interfaces.schemas.patient import MettreAJourPatientSchema, PatientSchema
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.interfaces.schemas.patient import PatientListeSchema, MedecinListeSchema
 from app.application.use_cases.patient.lister_patients import ListerPatientsUseCase
@@ -164,7 +165,12 @@ async def obtenir_patient(
     """Retourne le profil médical d'un patient."""
     try:
         async with AsyncSessionFactory() as session:
-            patient = await session.get(PatientModel, patient_id)
+            result = await session.execute(
+                select(PatientModel)
+                .where(PatientModel.user_id == patient_id)
+                .options(selectinload(PatientModel.medecin))
+            )
+            patient = result.scalar_one_or_none()
             if not patient:
                 raise PatientNotFoundError()
             return patient
@@ -184,7 +190,12 @@ async def mettre_a_jour_patient(
     """Met à jour le profil médical d'un patient."""
     try:
         async with AsyncSessionFactory() as session:
-            patient = await session.get(PatientModel, patient_id)
+            result = await session.execute(
+                select(PatientModel)
+                .where(PatientModel.user_id == patient_id)
+                .options(selectinload(PatientModel.medecin))
+            )
+            patient = result.scalar_one_or_none()
             if not patient:
                 raise PatientNotFoundError()
 

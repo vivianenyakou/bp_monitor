@@ -33,8 +33,11 @@ class AccepterInvitationUseCase:
             if datetime.utcnow() > invitation.expire_le:
                 raise ApplicationException("Ce code d'invitation a expiré.")
 
-            # 3. Vérifier le patient
-            patient = await session.get(PatientModel, dto.patient_id)
+            # 3. Vérifier le patient (dto.patient_id est le user_id)
+            result = await session.execute(
+                select(PatientModel).where(PatientModel.user_id == dto.patient_id)
+            )
+            patient = result.scalar_one_or_none()
             if not patient:
                 raise PatientNotFoundError()
 

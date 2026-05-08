@@ -26,7 +26,13 @@ class PatientModel(AuditableEntity):
 
     # Relations
     user    = relationship("UserModel", back_populates="patient_profile" , foreign_keys=[user_id])
-    medecin = relationship("UserModel",foreign_keys=[medecin_id])
+    medecin = relationship("UserModel", foreign_keys=[medecin_id])
+
+    @property
+    def medecin_nom_complet(self) -> str | None:
+        if self.medecin is None:
+            return None
+        return f"{self.medecin.first_name or ''} {self.medecin.last_name or ''}".strip() or None
     organisation = relationship("OrganisationModel", back_populates="patients")
     mesures = relationship("MesureModel", back_populates="patient")
     alertes = relationship("AlerteModel", back_populates="patient")
