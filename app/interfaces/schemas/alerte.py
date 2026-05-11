@@ -18,6 +18,8 @@ class AlerteSchema(BaseModel):
     declenchee_le: datetime
     acquittee_le: datetime | None
     acquittee_par: str | None
+    patient_nom_complet: str | None = None
+    patient_telephone: str | None = None
 
     model_config = {"from_attributes": True}
 

@@ -8,13 +8,11 @@ import 'package:url_launcher/url_launcher.dart';
 class PatientCritiqueCard extends StatelessWidget {
   final Alerte alerte;
   final VoidCallback? onAcquitter;
-  final String? telephone;
 
   const PatientCritiqueCard({
     super.key,
     required this.alerte,
     this.onAcquitter,
-    this.telephone,
   });
 
   Color get _color {
@@ -40,18 +38,28 @@ class PatientCritiqueCard extends StatelessWidget {
     return '${date.day}/${date.month}';
   }
 
+  String _initiales(String nom) {
+    final parts = nom.trim().split(' ');
+    if (parts.length >= 2) return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    if (parts.isNotEmpty && parts[0].isNotEmpty) return parts[0][0].toUpperCase();
+    return 'P';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final nom = alerte.patientNomComplet ?? 'Patient #${alerte.patientId}';
+    final tel = alerte.patientTelephone;
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color:        Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border:       Border.all(color: _color.withOpacity(0.3)),
+        borderRadius: BorderRadius.circular(14),
+        border:       Border.all(color: _color.withOpacity(0.25)),
         boxShadow: [
           BoxShadow(
-            color:   Colors.black.withOpacity(0.05),
-            blurRadius: 8,
+            color:      Colors.black.withOpacity(0.04),
+            blurRadius: 6,
           ),
         ],
       ),
@@ -59,29 +67,27 @@ class PatientCritiqueCard extends StatelessWidget {
         children: [
           // Header
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16, vertical: 12,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
               color: _bgColor,
               borderRadius: const BorderRadius.only(
-                topLeft:  Radius.circular(16),
-                topRight: Radius.circular(16),
+                topLeft:  Radius.circular(14),
+                topRight: Radius.circular(14),
               ),
             ),
             child: Row(
               children: [
-                // Avatar patient
+                // Avatar initiales
                 Container(
-                  width: 40,
-                  height: 40,
+                  width: 36,
+                  height: 36,
                   decoration: BoxDecoration(
                     color:  _color.withOpacity(0.2),
                     shape:  BoxShape.circle,
                   ),
                   child: Center(
                     child: Text(
-                      'P${alerte.patientId}',
+                      _initiales(nom),
                       style: AppTextStyles.caption.copyWith(
                         color:      _color,
                         fontWeight: FontWeight.bold,
@@ -89,18 +95,19 @@ class PatientCritiqueCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
 
-                // Info patient
+                // Nom + date
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Patient #${alerte.patientId}',
+                        nom,
                         style: AppTextStyles.body.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                       Text(
                         _formatDate(alerte.declencheeLE),
@@ -112,9 +119,7 @@ class PatientCritiqueCard extends StatelessWidget {
 
                 // Badge niveau
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10, vertical: 4,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color:        _color,
                     borderRadius: BorderRadius.circular(20),
@@ -131,75 +136,75 @@ class PatientCritiqueCard extends StatelessWidget {
             ),
           ),
 
-          // Corps — valeurs BP
+          // Corps — valeurs BP + actions
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
             child: Column(
               children: [
                 Row(
                   children: [
                     _buildBPValue(
-                      'Systolique',
+                      'Sys.',
                       '${alerte.systolique}',
                       AppColors.hypertension,
                     ),
-                    const SizedBox(width: 24),
+                    const SizedBox(width: 20),
                     _buildBPValue(
-                      'Diastolique',
+                      'Dia.',
                       '${alerte.diastolique}',
                       AppColors.primary,
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
 
                 // Boutons actions
                 Row(
                   children: [
-                    // Appeler
-                    if (telephone != null)
+                    if (tel != null) ...[
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: () => _appeler(telephone!),
+                          onPressed: () => _appeler(tel),
                           icon: const Icon(
                             Icons.phone,
-                            size: 16,
+                            size: 14,
                             color: AppColors.primary,
                           ),
                           label: Text(
                             'Appeler',
                             style: AppTextStyles.body.copyWith(
-                              color: AppColors.primary,
+                              color:    AppColors.primary,
+                              fontSize: 13,
                             ),
                           ),
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(
-                              color: AppColors.primary,
-                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            side: const BorderSide(color: AppColors.primary),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
                         ),
                       ),
-                    if (telephone != null) const SizedBox(width: 8),
-
-                    // Acquitter
+                      const SizedBox(width: 8),
+                    ],
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: onAcquitter,
                         icon: const Icon(
                           Icons.check,
-                          size: 16,
+                          size: 14,
                           color: Colors.white,
                         ),
                         label: Text(
                           'Acquitter',
                           style: AppTextStyles.body.copyWith(
-                            color: Colors.white,
+                            color:    Colors.white,
+                            fontSize: 13,
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
+                          padding:         const EdgeInsets.symmetric(vertical: 8),
                           backgroundColor: _color,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),

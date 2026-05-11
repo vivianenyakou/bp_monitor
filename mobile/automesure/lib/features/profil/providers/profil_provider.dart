@@ -137,15 +137,27 @@ class ProfilNotifier extends StateNotifier<ProfilState> {
     String? address,
     String? emergencyContact,
     String? bloodGroup,
+    int? seuilSystoliqueEleve,
+    int? seuilDiastoliqueEleve,
+    int? seuilSystoliqueHypertension,
+    int? seuilDiastoliqueHypertension,
+    int? seuilSystoliqueCritique,
+    int? seuilDiastoliqueCritique,
   }) async {
     state = state.copyWith(isSaving: true, error: null);
     try {
       final data = <String, dynamic>{};
-      if (gender != null)           data['gender']            = gender;
-      if (birthDate != null)        data['birth_date']        = birthDate;
-      if (address != null)          data['address']           = address;
-      if (emergencyContact != null) data['emergency_contact'] = emergencyContact;
-      if (bloodGroup != null)       data['blood_group']       = bloodGroup;
+      if (gender != null)                      data['gender']                          = gender;
+      if (birthDate != null)                   data['birth_date']                      = birthDate;
+      if (address != null)                     data['address']                         = address;
+      if (emergencyContact != null)            data['emergency_contact']               = emergencyContact;
+      if (bloodGroup != null)                  data['blood_group']                     = bloodGroup;
+      if (seuilSystoliqueEleve != null)        data['seuil_systolique_eleve']          = seuilSystoliqueEleve;
+      if (seuilDiastoliqueEleve != null)       data['seuil_diastolique_eleve']         = seuilDiastoliqueEleve;
+      if (seuilSystoliqueHypertension != null) data['seuil_systolique_hypertension']   = seuilSystoliqueHypertension;
+      if (seuilDiastoliqueHypertension != null)data['seuil_diastolique_hypertension']  = seuilDiastoliqueHypertension;
+      if (seuilSystoliqueCritique != null)     data['seuil_systolique_critique']       = seuilSystoliqueCritique;
+      if (seuilDiastoliqueCritique != null)    data['seuil_diastolique_critique']      = seuilDiastoliqueCritique;
 
       await _api.patch(ApiEndpoints.patient(patientId), data: data);
       await charger(patientId);

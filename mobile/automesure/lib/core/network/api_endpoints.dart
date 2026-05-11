@@ -15,6 +15,7 @@ class ApiEndpoints {
   static String acquitterAlerte(int id) => '/alertes/$id/acquitter';
 
   // Patients
+  static const patientsList    = '/patients/';
   static const medecins        = '/patients/medecins/liste';
   static String patient(int id) => '/patients/$id';
   static const genererInvitation = '/patients/invitation/generer';
@@ -22,8 +23,9 @@ class ApiEndpoints {
       '/patients/$id/invitation/accepter';
   static String choisirMedecin(int patientId) =>
       '/patients/$patientId/choisir-medecin';
-  // Ajouter
-  static const organisations    = '/organisations/';
-  static const utilisateurs     = '/auth/utilisateurs';
-  static const creerUtilisateur = '/auth/utilisateurs';
+  // Organisations
+  static const organisations          = '/organisations/';
+  static const organisationsPubliques = '/organisations/publiques';
+  static const utilisateurs           = '/auth/utilisateurs';
+  static const creerUtilisateur       = '/auth/utilisateurs';
 }

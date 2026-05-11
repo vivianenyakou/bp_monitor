@@ -37,7 +37,8 @@ class _AlertesScreenState extends ConsumerState<AlertesScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => context.go('/home'),
+          onPressed: () =>
+              context.go(isMedecin ? '/medecin/dashboard' : '/home'),
         ),
         title: Row(
           children: [
@@ -157,7 +158,8 @@ class _AlertesScreenState extends ConsumerState<AlertesScreen> {
         ),
         title: const Text('Acquitter l\'alerte'),
         content: Text(
-          'Confirmer l\'acquittement de l\'alerte pour le patient ${alerte.patientId} ?',
+          'Confirmer l\'acquittement de l\'alerte pour '
+          '${alerte.patientNomComplet ?? 'le patient #${alerte.patientId}'} ?',
         ),
         actions: [
           TextButton(

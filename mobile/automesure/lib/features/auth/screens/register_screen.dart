@@ -1,9 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/network/api_endpoints.dart';
 import '../providers/auth_provider.dart';
+
+class _Organisation {
+  final int    id;
+  final String nom;
+  final String code;
+  const _Organisation({required this.id, required this.nom, required this.code});
+}
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -13,15 +23,39 @@ class RegisterScreen extends ConsumerStatefulWidget {
 }
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
-  final _formKey     = GlobalKey<FormState>();
+  final _formKey      = GlobalKey<FormState>();
   final _usernameCtrl = TextEditingController();
-  final _emailCtrl   = TextEditingController();
-  final _passCtrl    = TextEditingController();
-  final _firstCtrl   = TextEditingController();
-  final _lastCtrl    = TextEditingController();
-  final _phoneCtrl   = TextEditingController();
-  final _orgCtrl     = TextEditingController();
-  bool _obscure      = true;
+  final _emailCtrl    = TextEditingController();
+  final _passCtrl     = TextEditingController();
+  final _firstCtrl    = TextEditingController();
+  final _lastCtrl     = TextEditingController();
+  final _phoneCtrl    = TextEditingController();
+  bool _obscure       = true;
+
+  List<_Organisation> _organisations = [];
+  _Organisation?      _orgSelectionnee;
+  bool                _loadingOrgs = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _chargerOrganisations();
+  }
+
+  Future<void> _chargerOrganisations() async {
+    try {
+      final api      = ref.read(apiClientProvider);
+      final response = await api.get(ApiEndpoints.organisationsPubliques);
+      final list     = (response.data as List).map((o) => _Organisation(
+        id:   o['id'],
+        nom:  o['nom'],
+        code: o['code'],
+      )).toList();
+      setState(() { _organisations = list; _loadingOrgs = false; });
+    } catch (_) {
+      setState(() => _loadingOrgs = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -31,24 +65,30 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     _firstCtrl.dispose();
     _lastCtrl.dispose();
     _phoneCtrl.dispose();
-    _orgCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
     final ok = await ref.read(authProvider.notifier).register(
-          username: _usernameCtrl.text.trim(),
-          email: _emailCtrl.text.trim(),
-          password: _passCtrl.text,
-          firstName: _firstCtrl.text.trim(),
-          lastName: _lastCtrl.text.trim(),
-          phoneNumber: _phoneCtrl.text.trim(),
-          organisationCode: _orgCtrl.text.trim().isEmpty
-              ? null
-              : _orgCtrl.text.trim().toUpperCase(),
-        );
-    if (ok && mounted) context.go('/home');
+      username:         _usernameCtrl.text.trim(),
+      email:            _emailCtrl.text.trim(),
+      password:         _passCtrl.text,
+      firstName:        _firstCtrl.text.trim(),
+      lastName:         _lastCtrl.text.trim(),
+      phoneNumber:      _phoneCtrl.text.trim(),
+      organisationCode: _orgSelectionnee?.code,
+    );
+    if (ok && mounted) {
+      final user  = ref.read(authProvider).user;
+      final prefs = await SharedPreferences.getInstance();
+      final done  = prefs.getBool('setup_done_${user?.id}') ?? false;
+      if (!done && (user?.isPatient ?? false)) {
+        if (mounted) context.go('/setup-profil');
+      } else {
+        if (mounted) context.go('/home');
+      }
+    }
   }
 
   @override
@@ -75,64 +115,42 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               children: [
                 Text('Créer un compte', style: AppTextStyles.heading1),
                 const SizedBox(height: 8),
-                Text(
-                  'Rejoignez Auto-Mésure santé',
-                  style: AppTextStyles.bodySecondary,
-                ),
+                Text('Rejoignez Auto-Mésure santé', style: AppTextStyles.bodySecondary),
                 const SizedBox(height: 32),
 
                 // Prénom + Nom
                 Row(
                   children: [
-                    Expanded(
-                      child: _buildField(
-                        label: 'Prénom',
-                        controller: _firstCtrl,
-                        hint: 'Ama',
-                        icon: Icons.person_outline,
-                      ),
-                    ),
+                    Expanded(child: _buildField(
+                      label: 'Prénom', controller: _firstCtrl,
+                      hint: 'Ama', icon: Icons.person_outline,
+                    )),
                     const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildField(
-                        label: 'Nom',
-                        controller: _lastCtrl,
-                        hint: 'Koffi',
-                        icon: Icons.person_outline,
-                        required: false,
-                      ),
-                    ),
+                    Expanded(child: _buildField(
+                      label: 'Nom', controller: _lastCtrl,
+                      hint: 'Koffi', icon: Icons.person_outline, required: false,
+                    )),
                   ],
                 ),
                 const SizedBox(height: 16),
 
-                // Username
                 _buildField(
-                  label: 'Nom d\'utilisateur',
-                  controller: _usernameCtrl,
-                  hint: 'ama.koffi',
-                  icon: Icons.alternate_email,
+                  label: 'Nom d\'utilisateur', controller: _usernameCtrl,
+                  hint: 'ama.koffi', icon: Icons.alternate_email,
                 ),
                 const SizedBox(height: 16),
 
-                // Email
                 _buildField(
-                  label: 'Email',
-                  controller: _emailCtrl,
-                  hint: 'ama@email.com',
-                  icon: Icons.email_outlined,
+                  label: 'Email', controller: _emailCtrl,
+                  hint: 'ama@email.com', icon: Icons.email_outlined,
                   keyboard: TextInputType.emailAddress,
                 ),
                 const SizedBox(height: 16),
 
-                // Téléphone
                 _buildField(
-                  label: 'Téléphone',
-                  controller: _phoneCtrl,
-                  hint: '+228 90 00 00 00',
-                  icon: Icons.phone_outlined,
-                  keyboard: TextInputType.phone,
-                  required: false,
+                  label: 'Téléphone', controller: _phoneCtrl,
+                  hint: '+228 90 00 00 00', icon: Icons.phone_outlined,
+                  keyboard: TextInputType.phone, required: false,
                 ),
                 const SizedBox(height: 16),
 
@@ -140,12 +158,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 _buildLabel('Mot de passe'),
                 const SizedBox(height: 8),
                 TextFormField(
-                  controller: _passCtrl,
+                  controller:  _passCtrl,
                   obscureText: _obscure,
-                  decoration: _inputDecoration(
-                    hint: '••••••••',
-                    icon: Icons.lock_outline,
-                  ).copyWith(
+                  decoration:  _inputDecoration(hint: '••••••••', icon: Icons.lock_outline)
+                      .copyWith(
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscure ? Icons.visibility_off : Icons.visibility,
@@ -162,17 +178,55 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Code organisation
-                _buildField(
-                  label: 'Structure Médicale (optionnel)',
-                  controller: _orgCtrl,
-                  hint: 'Ex: HOPITAL_LOME',
-                  icon: Icons.business_outlined,
-                  required: false,
-                ),
+                // ── Dropdown organisation ────────────────────────────────
+                _buildLabel('Structure médicale (optionnel)'),
                 const SizedBox(height: 8),
+                _loadingOrgs
+                    ? const SizedBox(
+                        height: 52,
+                        child: Center(
+                          child: CircularProgressIndicator(color: AppColors.primary),
+                        ),
+                      )
+                    : Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          color:        AppColors.background,
+                          borderRadius: BorderRadius.circular(12),
+                          border: _orgSelectionnee != null
+                              ? Border.all(color: AppColors.primary, width: 2)
+                              : null,
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<_Organisation>(
+                            value:      _orgSelectionnee,
+                            isExpanded: true,
+                            hint: Text(
+                              _organisations.isEmpty
+                                  ? 'Aucune organisation disponible'
+                                  : 'Sélectionner votre clinique / hôpital',
+                              style: AppTextStyles.bodySecondary,
+                            ),
+                            icon: const Icon(Icons.keyboard_arrow_down,
+                                color: AppColors.primary),
+                            items: [
+                              const DropdownMenuItem<_Organisation>(
+                                value: null,
+                                child: Text('Aucune'),
+                              ),
+                              ..._organisations.map((o) => DropdownMenuItem(
+                                    value: o,
+                                    child: Text(o.nom),
+                                  )),
+                            ],
+                            onChanged: (val) =>
+                                setState(() => _orgSelectionnee = val),
+                          ),
+                        ),
+                      ),
+                const SizedBox(height: 4),
                 Text(
-                  'Demandez ce code à votre clinique ou hôpital.',
+                  'Sélectionnez votre clinique ou hôpital si applicable.',
                   style: AppTextStyles.caption,
                 ),
                 const SizedBox(height: 24),
@@ -181,9 +235,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 if (state.error != null)
                   Container(
                     padding: const EdgeInsets.all(12),
-                    margin: const EdgeInsets.only(bottom: 16),
+                    margin:  const EdgeInsets.only(bottom: 16),
                     decoration: BoxDecoration(
-                      color: AppColors.critiqueLight,
+                      color:        AppColors.critiqueLight,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -192,12 +246,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             color: AppColors.critique, size: 20),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: Text(
-                            state.error!,
-                            style: AppTextStyles.body.copyWith(
-                              color: AppColors.critique,
-                            ),
-                          ),
+                          child: Text(state.error!,
+                              style: AppTextStyles.body
+                                  .copyWith(color: AppColors.critique)),
                         ),
                       ],
                     ),
@@ -205,26 +256,23 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                 // Bouton register
                 SizedBox(
-                  width: double.infinity,
+                  width:  double.infinity,
                   height: 56,
                   child: ElevatedButton(
                     onPressed: state.isLoading ? null : _register,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
+                          borderRadius: BorderRadius.circular(16)),
                     ),
                     child: state.isLoading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : Text(
-                            'Créer mon compte',
+                        : Text('Créer mon compte',
                             style: AppTextStyles.body.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
-                            ),
-                          ),
+                            )),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -234,21 +282,27 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        'Déjà un compte ? ',
-                        style: AppTextStyles.bodySecondary,
-                      ),
+                      Text('Déjà un compte ? ', style: AppTextStyles.bodySecondary),
                       GestureDetector(
                         onTap: () => context.go('/login'),
-                        child: Text(
-                          'Se connecter',
-                          style: AppTextStyles.body.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        child: Text('Se connecter',
+                            style: AppTextStyles.body.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.bold,
+                            )),
                       ),
                     ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Powered by
+                const Center(
+                  child: Text(
+                    'Powered by G-Medic',
+                    style: TextStyle(
+                      fontSize: 11, color: Color(0xFFAAAAAA), letterSpacing: 0.5,
+                    ),
                   ),
                 ),
               ],
@@ -273,42 +327,34 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           _buildLabel(label),
           const SizedBox(height: 8),
           TextFormField(
-            controller: controller,
+            controller:  controller,
             keyboardType: keyboard,
-            decoration: _inputDecoration(hint: hint, icon: icon),
-            validator: required
+            decoration:  _inputDecoration(hint: hint, icon: icon),
+            validator:   required
                 ? (v) => v == null || v.isEmpty ? 'Champ requis' : null
                 : null,
           ),
         ],
       );
 
-  Widget _buildLabel(String label) => Text(
-        label,
-        style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
-      );
+  Widget _buildLabel(String label) =>
+      Text(label, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600));
 
-  InputDecoration _inputDecoration({
-    required String hint,
-    required IconData icon,
-  }) =>
+  InputDecoration _inputDecoration({required String hint, required IconData icon}) =>
       InputDecoration(
-        hintText: hint,
-        hintStyle: AppTextStyles.bodySecondary,
-        prefixIcon: Icon(icon, color: AppColors.textSecondary),
-        filled: true,
-        fillColor: AppColors.background,
+        hintText:    hint,
+        hintStyle:   AppTextStyles.bodySecondary,
+        prefixIcon:  Icon(icon, color: AppColors.textSecondary),
+        filled:      true,
+        fillColor:   AppColors.background,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+          borderSide:   BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.primary, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 16,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       );
 }

@@ -1,0 +1,14 @@
+1) Remarque et suggestion
+    - Powered by G-Medic
+    - Se connecter avant de voir le tuto
+    - Pour la dermiere mesure: derniere moyenne d'auto-mesure sur 3 jours
+    - Pour le code qr, ajouter en même temps l'information de l'hôpital
+    - Avoir un point Focal qui se charge d'appeler le patient
+    - Ajouter un médecin référant
+    - Si je scan sur le code de Dr Ehhan, je me rattache à lui
+    - Avoir le code qr partout
+    - Statisques : Patient, moyenne sur une periode donnée,
+    - Notification par whatsapp
+    - A l'inscription demander si personne hipertendu
+    - Revoir les chiffres en fonction de Hipertendu ou pas
+    -

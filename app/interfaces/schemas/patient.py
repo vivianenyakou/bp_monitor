@@ -27,6 +27,10 @@ class MettreAJourPatientSchema(BaseModel):
     blood_group: BloodGroup | None = None
     address: str | None = None
     emergency_contact: str | None = None
+    seuil_systolique_eleve: int | None = None
+    seuil_diastolique_eleve: int | None = None
+    seuil_systolique_hypertension: int | None = None
+    seuil_diastolique_hypertension: int | None = None
     seuil_systolique_critique: int | None = None
     seuil_diastolique_critique: int | None = None
 

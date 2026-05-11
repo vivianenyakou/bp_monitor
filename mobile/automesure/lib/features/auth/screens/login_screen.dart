@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../providers/auth_provider.dart';
@@ -28,23 +29,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
     final ok = await ref.read(authProvider.notifier).login(
-          _identCtrl.text.trim(),
-          _passCtrl.text,
-        );
-    if (ok && mounted) {
-        final user = ref.read(authProvider).user;
+      _identCtrl.text.trim(),
+      _passCtrl.text,
+    );
+    if (!ok || !mounted) return;
 
-        if (
-            user?.isSuperAdmin == true || user?.isAdmin == true ) {
-          context.go('/admin');
-        }
-        else if (user?.isMedecin == true) {
-          context.go('/medecin/dashboard');
-        }
-        else {
-          context.go('/home');
-        }
-      }
+    final user = ref.read(authProvider).user;
+
+    if (user?.isSuperAdmin == true || user?.isAdmin == true) {
+      context.go('/admin');
+    } else if (user?.isMedecin == true) {
+      context.go('/medecin/dashboard');
+    } else if (user?.isPatient == true) {
+      final prefs = await SharedPreferences.getInstance();
+      final done  = prefs.getBool('setup_done_${user!.id}') ?? false;
+      if (mounted) context.go(done ? '/home' : '/setup-profil');
+    } else {
+      context.go('/home');
+    }
   }
 
   @override
@@ -213,6 +215,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ),
                     ],
+                  ),
+                ),
+                const SizedBox(height: 32),
+                const Center(
+                  child: Text(
+                    'Powered by G-Medic',
+                    style: TextStyle(
+                      fontSize: 11, color: Color(0xFFAAAAAA), letterSpacing: 0.5,
+                    ),
                   ),
                 ),
               ],

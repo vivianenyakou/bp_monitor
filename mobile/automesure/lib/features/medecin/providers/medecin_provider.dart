@@ -7,6 +7,8 @@ import '../../auth/providers/auth_provider.dart';
 class PatientMedecin {
   final int id;
   final int userId;
+  final String nomComplet;
+  final String? telephone;
   final String? gender;
   final String? birthDate;
   final String? bloodGroup;
@@ -15,6 +17,8 @@ class PatientMedecin {
   const PatientMedecin({
     required this.id,
     required this.userId,
+    required this.nomComplet,
+    this.telephone,
     this.gender,
     this.birthDate,
     this.bloodGroup,
@@ -24,6 +28,8 @@ class PatientMedecin {
   factory PatientMedecin.fromJson(Map<String, dynamic> json) => PatientMedecin(
         id:         json['id'],
         userId:     json['user_id'],
+        nomComplet: json['nom_complet'] ?? '',
+        telephone:  json['telephone'],
         gender:     json['gender'],
         birthDate:  json['birth_date'],
         bloodGroup: json['blood_group'],
@@ -81,8 +87,9 @@ class MedecinState {
 
 class MedecinNotifier extends StateNotifier<MedecinState> {
   final ApiClient _api;
+  final int? _userId;
 
-  MedecinNotifier(this._api) : super(const MedecinState());
+  MedecinNotifier(this._api, this._userId) : super(const MedecinState());
 
   Future<void> charger() async {
     state = state.copyWith(isLoading: true);
@@ -101,10 +108,20 @@ class MedecinNotifier extends StateNotifier<MedecinState> {
           .where((a) => a.estAvertissement && !a.estAquittee)
           .toList();
 
+      // Charger les patients (filtrés par médecin côté mobile)
+      final patientsResp = await _api.get(ApiEndpoints.patientsList);
+      final tousPatients = (patientsResp.data as List)
+          .map((p) => PatientMedecin.fromJson(p))
+          .toList();
+      final mesPatients = _userId != null
+          ? tousPatients.where((p) => p.medecinId == _userId).toList()
+          : tousPatients;
+
       state = state.copyWith(
         isLoading:          false,
         alertesCritiques:   critiques,
         alertesASurveiller: aSurveiller,
+        patients:           mesPatients,
       );
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -135,5 +152,6 @@ class MedecinNotifier extends StateNotifier<MedecinState> {
 
 final medecinProvider =
     StateNotifierProvider<MedecinNotifier, MedecinState>((ref) {
-  return MedecinNotifier(ref.watch(apiClientProvider));
+  final userId = ref.watch(authProvider).user?.id;
+  return MedecinNotifier(ref.watch(apiClientProvider), userId);
 });

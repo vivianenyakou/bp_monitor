@@ -167,6 +167,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
 
+            // Powered by
+            const Padding(
+              padding: EdgeInsets.only(bottom: 8),
+              child: Text(
+                'Powered by G-Medic',
+                style: TextStyle(
+                  fontSize: 11, color: Color(0xFFAAAAAA), letterSpacing: 0.5,
+                ),
+              ),
+            ),
+
             // Bouton
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),

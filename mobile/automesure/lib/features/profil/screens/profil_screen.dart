@@ -228,6 +228,59 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
             ),
           ],
         ),
+
+      // Liste des patients suivis
+      if (medecinState.patients.isNotEmpty) ...[
+        const SizedBox(height: 4),
+        Container(
+          decoration: BoxDecoration(
+            color:        Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color:      Colors.black.withOpacity(0.04),
+                blurRadius: 8,
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Text(
+                  'Patients suivis (${medecinState.patients.length})',
+                  style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ),
+              const Divider(height: 1),
+              ...medecinState.patients.map(
+                (p) => ListTile(
+                  dense:   true,
+                  leading: CircleAvatar(
+                    radius:          18,
+                    backgroundColor: AppColors.primarySurface,
+                    child: Text(
+                      _initiales(p.nomComplet),
+                      style: AppTextStyles.caption.copyWith(
+                        color:      AppColors.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  title: Text(
+                    p.nomComplet,
+                    style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: p.telephone != null
+                      ? Text(p.telephone!, style: AppTextStyles.caption)
+                      : null,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     ];
   }
 
@@ -411,6 +464,13 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
           ),
         ],
       );
+
+  String _initiales(String nom) {
+    final parts = nom.trim().split(' ');
+    if (parts.length >= 2) return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    if (parts.isNotEmpty && parts[0].isNotEmpty) return parts[0][0].toUpperCase();
+    return 'P';
+  }
 
   Future<void> _deconnecter(BuildContext context) async {
     final confirmed = await showDialog<bool>(

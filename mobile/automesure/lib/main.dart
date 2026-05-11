@@ -11,7 +11,10 @@ import 'features/admin/screens/admin_roles_screen.dart';
 import 'features/admin/screens/admin_screen.dart';
 import 'features/historique/screens/historique_screen.dart';
 import 'features/medecin/screens/dashboard_medecin_screen.dart';
+import 'features/medecin/screens/stats_medecin_screen.dart';
+import 'features/patient/patient_screen.dart';
 import 'features/onboarding/screens/onboarding_screen.dart';
+import 'features/setup/screens/setup_profil_screen.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/auth/screens/register_screen.dart';
 import 'features/profil/screens/profil_screen.dart';
@@ -52,20 +55,20 @@ final _router = GoRouter(
       builder: (_, __) => const AlertesScreen(),
     ),
     GoRoute(
+      path: '/setup-profil',
+      builder: (_, __) => const SetupProfilScreen(),
+    ),
+    GoRoute(
       path: '/medecin/dashboard',
       builder: (_, __) => const DashboardMedecinScreen(),
     ),
     GoRoute(
       path: '/medecin/patients',
-      builder: (_, __) => const Scaffold(
-        body: Center(child: Text('Patients — à venir')),
-      ),
+      builder: (_, __) => const PatientScreen(),
     ),
     GoRoute(
       path: '/medecin/stats',
-      builder: (_, __) => const Scaffold(
-        body: Center(child: Text('Stats — à venir')),
-      ),
+      builder: (_, __) => const StatsMedecinScreen(),
     ),
     GoRoute(
       path: '/profil',

@@ -15,6 +15,8 @@ class Alerte {
   final DateTime declencheeLE;
   final DateTime? acquitteeLE;
   final String? acquitteePar;
+  final String? patientNomComplet;
+  final String? patientTelephone;
 
   const Alerte({
     required this.id,
@@ -28,22 +30,26 @@ class Alerte {
     required this.declencheeLE,
     this.acquitteeLE,
     this.acquitteePar,
+    this.patientNomComplet,
+    this.patientTelephone,
   });
 
   factory Alerte.fromJson(Map<String, dynamic> json) => Alerte(
-        id:           json['id'],
-        patientId:    json['patient_id'],
-        medecinId:    json['medecin_id'],
-        systolique:   json['systolique'],
-        diastolique:  json['diastolique'],
-        niveau:       json['niveau'],
-        statut:       json['statut'],
-        message:      json['message'],
-        declencheeLE: DateTime.parse(json['declenchee_le']),
-        acquitteeLE:  json['acquittee_le'] != null
+        id:                 json['id'],
+        patientId:          json['patient_id'],
+        medecinId:          json['medecin_id'],
+        systolique:         json['systolique'],
+        diastolique:        json['diastolique'],
+        niveau:             json['niveau'],
+        statut:             json['statut'],
+        message:            json['message'],
+        declencheeLE:       DateTime.parse(json['declenchee_le']),
+        acquitteeLE:        json['acquittee_le'] != null
             ? DateTime.parse(json['acquittee_le'])
             : null,
-        acquitteePar: json['acquittee_par'],
+        acquitteePar:       json['acquittee_par'],
+        patientNomComplet:  json['patient_nom_complet'],
+        patientTelephone:   json['patient_telephone'],
       );
 
   bool get estCritique     => niveau == 'critique';

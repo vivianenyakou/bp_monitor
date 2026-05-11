@@ -142,6 +142,24 @@ class AlerteCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
 
+                // Nom du patient (affiché pour le médecin)
+                if (alerte.patientNomComplet != null) ...[
+                  Row(
+                    children: [
+                      const Icon(Icons.person_outline,
+                          size: 14, color: AppColors.textSecondary),
+                      const SizedBox(width: 4),
+                      Text(
+                        alerte.patientNomComplet!,
+                        style: AppTextStyles.caption.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                ],
+
                 // Message
                 Text(
                   alerte.message,
