@@ -1,7 +1,7 @@
 class AppConstants {
   // API
-  static const baseUrl = 'http://192.168.137.31:8000/api/v1';
-
+  //static const baseUrl = 'http://192.168.137.31:8000/api/v1';
+  static const baseUrl = 'https://api.g-autobp.tech/api/v1';
   // Session BP
   static const totalMesuresSession = 18;
   static const mesuresParJour      = 6;  // 3 matin + 3 soir

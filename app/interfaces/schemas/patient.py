@@ -79,5 +79,6 @@ class MedecinListeSchema(BaseModel):
     is_active:       bool
     roles:           list[str]
     created_on:      str | None
+    specialite:      str | None = None
 
     model_config = {"from_attributes": True}

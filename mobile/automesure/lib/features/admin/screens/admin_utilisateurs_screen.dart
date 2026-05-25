@@ -42,7 +42,7 @@ class _AdminUtilisateursScreenState
         elevation:       0,
         leading: IconButton(
           icon:      const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => context.go('/medecin/dashboard'),
+          onPressed: () => context.go('/admin'),
         ),
         title: Text('Utilisateurs', style: AppTextStyles.heading3),
         actions: [

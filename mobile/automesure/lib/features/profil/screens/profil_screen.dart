@@ -49,7 +49,9 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
         leading: IconButton(
           icon:      const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => context.go(
-            user.isMedecin ? '/medecin/dashboard' : '/home',
+            user.isAdmin || user.isSuperAdmin ? '/admin' :
+            user.isMedecin ? '/medecin/dashboard' :
+                            '/home'
           ),
         ),
         title: Text(

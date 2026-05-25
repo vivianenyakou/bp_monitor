@@ -79,7 +79,7 @@ class AdminRolesScreen extends StatelessWidget {
         elevation:       0,
         leading: IconButton(
           icon:      const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => context.go('/medecin/dashboard'),
+          onPressed: () => context.go('/admin'),
         ),
         title: Text('Rôles & Permissions', style: AppTextStyles.heading3),
       ),
