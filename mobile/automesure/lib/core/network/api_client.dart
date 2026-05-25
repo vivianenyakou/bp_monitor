@@ -29,6 +29,10 @@ class ApiClient {
           handler.next(options);
         },
         onError: (error, handler) async {
+            print('[API Error] ${error.message}');
+            print('[API Error] ${error.response?.statusCode}');
+            print('[API Error] ${error.type}');
+            print('[API Error] ${error.error}');
           if (error.response?.statusCode == 401) {
             await _storage.deleteAll();
           }
