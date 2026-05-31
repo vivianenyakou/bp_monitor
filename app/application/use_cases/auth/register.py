@@ -4,6 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.application.dtos.auth_dto import RegisterDTO, TokenDTO
+from app.application.services.phone_number_formatter import normaliser_telephone_togo
 from app.core.exceptions import ConflictError, NotFoundError
 from app.infrastructure.auth.jwt_service import JWTService
 from app.infrastructure.auth.password_service import PasswordService
@@ -55,9 +56,7 @@ class RegisterUseCase:
             role_patient = result.scalar_one_or_none()
 
             # 4. Créer l'utilisateur
-            phone = None
-            if dto.phone_number:
-                phone = dto.phone_number.strip().replace(" ", "").replace("-", "")
+            phone = normaliser_telephone_togo(dto.phone_number)
             user = UserModel(
                 username=dto.username,
                 email=dto.email,

@@ -20,8 +20,8 @@ class TokenModel {
 
 class UserModel {
   final int id;
-  final String username;
-  final String email;
+  final String? username;
+  final String? email;
   final String? firstName;
   final String? lastName;
   final String? phoneNumber;
@@ -31,8 +31,8 @@ class UserModel {
 
   const UserModel({
     required this.id,
-    required this.username,
-    required this.email,
+    this.username,
+    this.email,
     this.firstName,
     this.lastName,
     this.phoneNumber,
@@ -61,6 +61,21 @@ class UserModel {
 
   String get nomComplet =>
       '${firstName ?? ''} ${lastName ?? ''}'.trim();
+
+  String get nomAffichage =>
+      nomComplet.isNotEmpty
+          ? nomComplet
+          : username ?? phoneNumber ?? 'Utilisateur';
+
+  String get initiales {
+    final source = nomAffichage.trim();
+    if (source.isEmpty) return 'U';
+    final parts = source.split(RegExp(r'\s+'));
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    return source.substring(0, source.length >= 2 ? 2 : 1).toUpperCase();
+  }
    // Peut accéder aux menus admin
   bool get hasAdminAccess =>
       isAdmin || isSuperAdmin;

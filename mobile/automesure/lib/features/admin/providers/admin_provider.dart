@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_endpoints.dart';
+import '../../../core/utils/phone_number_formatter.dart';
 import '../../auth/providers/auth_provider.dart';
 
 // ── Models ────────────────────────────────────────────────────────
@@ -37,8 +38,8 @@ class Organisation {
 
 class UtilisateurAdmin {
   final int id;
-  final String username;
-  final String email;
+  final String? username;
+  final String? email;
   final String? firstName;
   final String? lastName;
   final String? phoneNumber;
@@ -48,8 +49,8 @@ class UtilisateurAdmin {
 
   const UtilisateurAdmin({
     required this.id,
-    required this.username,
-    required this.email,
+    this.username,
+    this.email,
     this.firstName,
     this.lastName,
     this.phoneNumber,
@@ -73,6 +74,21 @@ class UtilisateurAdmin {
 
   String get nomComplet =>
       '${firstName ?? ''} ${lastName ?? ''}'.trim();
+
+  String get nomAffichage =>
+      nomComplet.isNotEmpty
+          ? nomComplet
+          : username ?? phoneNumber ?? 'Utilisateur';
+
+  String get initiales {
+    final source = nomAffichage.trim();
+    if (source.isEmpty) return 'U';
+    final parts = source.split(RegExp(r'\s+'));
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    return source.substring(0, source.length >= 2 ? 2 : 1).toUpperCase();
+  }
 }
 
 class Role {
@@ -154,14 +170,17 @@ class AdminNotifier extends StateNotifier<AdminState> {
   }) async {
     state = state.copyWith(isSaving: true, error: null);
     try {
+      final trimmedAdresse = _blankToNull(adresse);
+      final formattedTelephone = formatTogoPhoneNumber(telephone);
+      final trimmedEmail = _blankToNull(email);
       await _api.post(
         ApiEndpoints.organisations,
         data: {
           'nom':       nom,
           'code':      code.toUpperCase(),
-          if (adresse   != null) 'adresse':   adresse,
-          if (telephone != null) 'telephone': telephone,
-          if (email     != null) 'email':     email,
+          if (trimmedAdresse != null) 'adresse': trimmedAdresse,
+          if (formattedTelephone != null) 'telephone': formattedTelephone,
+          if (trimmedEmail != null) 'email': trimmedEmail,
         },
       );
       await chargerOrganisations();
@@ -194,8 +213,8 @@ class AdminNotifier extends StateNotifier<AdminState> {
   }
 
   Future<bool> creerUtilisateur({
-    required String username,
-    required String email,
+    String? username,
+    String? email,
     required String password,
     required String role,
     String? firstName,
@@ -205,16 +224,19 @@ class AdminNotifier extends StateNotifier<AdminState> {
   }) async {
     state = state.copyWith(isSaving: true, error: null);
     try {
+      final trimmedUsername = _blankToNull(username);
+      final trimmedEmail = _blankToNull(email);
+      final formattedPhoneNumber = formatTogoPhoneNumber(phoneNumber);
       await _api.post(
         ApiEndpoints.creerUtilisateur,
         data: {
-          'username':     username,
-          'email':        email,
           'password':     password,
           'role':         role,
+          if (trimmedUsername != null) 'username': trimmedUsername,
+          if (trimmedEmail != null) 'email': trimmedEmail,
           if (firstName      != null) 'first_name':      firstName,
           if (lastName       != null) 'last_name':       lastName,
-          if (phoneNumber    != null) 'phone_number':    phoneNumber,
+          if (formattedPhoneNumber != null) 'phone_number': formattedPhoneNumber,
           if (organisationId != null) 'organisation_id': organisationId,
         },
       );
@@ -232,6 +254,12 @@ class AdminNotifier extends StateNotifier<AdminState> {
       return false;
     }
   }
+}
+
+String? _blankToNull(String? value) {
+  final trimmed = value?.trim();
+  if (trimmed == null || trimmed.isEmpty) return null;
+  return trimmed;
 }
 
 final adminProvider =

@@ -51,8 +51,8 @@ class PatientListeSchema(BaseModel):
     id:                int
     user_id:           int
     nom_complet:       str
-    username:          str
-    email:             str
+    username:          str | None
+    email:             str | None
     telephone:         str | None
     gender:            str | None
     birth_date:        str | None
@@ -72,8 +72,8 @@ class MedecinListeSchema(BaseModel):
     """Schéma complet pour la liste des médecins."""
     id:              int
     nom_complet:     str
-    username:        str
-    email:           str
+    username:        str | None
+    email:           str | None
     telephone:       str | None
     organisation_id: int | None
     is_active:       bool

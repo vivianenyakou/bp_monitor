@@ -45,7 +45,11 @@ class ListerMedecinsUseCase:
     def _to_dict(self, medecin: UserModel) -> dict:
         return {
             "id":               medecin.id,
-            "nom_complet":      f"Dr {medecin.first_name or ''} {medecin.last_name or ''}".strip(),
+            "nom_complet":      f"Dr {medecin.first_name or ''} {medecin.last_name or ''}".strip()
+                                if (medecin.first_name or medecin.last_name)
+                                else medecin.username
+                                or medecin.phone_number
+                                or "Medecin",
             "username":         medecin.username,
             "email":            medecin.email,
             "telephone":        medecin.phone_number,

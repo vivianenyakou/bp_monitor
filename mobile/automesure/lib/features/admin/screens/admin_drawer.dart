@@ -44,22 +44,22 @@ class AdminDrawer extends ConsumerWidget {
               context.go('/admin/utilisateurs');
             },
           ),
-          ListTile(
-            leading: const Icon(Icons.people_outlined),
-            title: const Text('Rôles'),
-            onTap: () {
-              Navigator.pop(context);
-              context.go('/admin/roles');
-            },
-          ),
-           ListTile(
-            leading: const Icon(Icons.people_outlined),
-            title: const Text('Rôles'),
-            onTap: () {
-              Navigator.pop(context);
-              context.go('/admin/roles');
-            },
-          ),
+          // ListTile(
+          //   leading: const Icon(Icons.people_outlined),
+          //   title: const Text('Rôles'),
+          //   onTap: () {
+          //     Navigator.pop(context);
+          //     context.go('/admin/roles');
+          //   },
+          // ),
+          //  ListTile(
+          //   leading: const Icon(Icons.people_outlined),
+          //   title: const Text('Rôles'),
+          //   onTap: () {
+          //     Navigator.pop(context);
+          //     context.go('/admin/roles');
+          //   },
+          // ),
             ListTile(
               leading: const Icon(Icons.business_outlined),
               title: const Text('Organisations'),

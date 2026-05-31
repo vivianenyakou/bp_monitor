@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../providers/admin_provider.dart';
 
@@ -226,16 +228,21 @@ class _AdminUtilisateursScreenState
                   ],
                 ),
                 const SizedBox(height: 12),
-                _buildField('Username *', usernameCtrl,
+                _buildField('Username', usernameCtrl,
                     Icons.alternate_email),
                 const SizedBox(height: 12),
-                _buildField('Email *', emailCtrl,
+                _buildField('Email', emailCtrl,
                     Icons.email_outlined,
                     keyboard: TextInputType.emailAddress),
                 const SizedBox(height: 12),
-                _buildField('Téléphone', phoneCtrl,
+                _buildField('Téléphone *', phoneCtrl,
                     Icons.phone_outlined,
-                    keyboard: TextInputType.phone),
+                    hint: '00 00 00 00',
+                    keyboard: TextInputType.phone,
+                    prefixText: '${AppConstants.phoneCountryCode} ',
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9 ]')),
+                    ]),
                 const SizedBox(height: 12),
                 _buildField('Mot de passe *', passCtrl,
                     Icons.lock_outline, obscure: true),
@@ -265,8 +272,7 @@ class _AdminUtilisateursScreenState
                     final isSaving = ref.watch(adminProvider).isSaving;
                     return ElevatedButton(
                       onPressed: isSaving ? null : () async {
-                        if (usernameCtrl.text.isEmpty ||
-                            emailCtrl.text.isEmpty   ||
+                        if (phoneCtrl.text.isEmpty ||
                             passCtrl.text.isEmpty) return;
                         final ok = await ref
                             .read(adminProvider.notifier)
@@ -314,6 +320,8 @@ class _AdminUtilisateursScreenState
     String? hint,
     TextInputType keyboard = TextInputType.text,
     bool obscure = false,
+    String? prefixText,
+    List<TextInputFormatter>? inputFormatters,
   }) =>
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -326,9 +334,15 @@ class _AdminUtilisateursScreenState
             controller:     ctrl,
             keyboardType:   keyboard,
             obscureText:    obscure,
+            inputFormatters: inputFormatters,
             decoration: InputDecoration(
               hintText:   hint,
               prefixIcon: Icon(icon, color: AppColors.textSecondary),
+              prefixText: prefixText,
+              prefixStyle: AppTextStyles.body.copyWith(
+                color:      AppColors.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
               filled:     true,
               fillColor:  AppColors.background,
               border: OutlineInputBorder(
@@ -388,7 +402,7 @@ class _UtilisateurCard extends StatelessWidget {
                         .take(2)
                         .join()
                         .toUpperCase()
-                    : utilisateur.username.substring(0, 2).toUpperCase(),
+                    : utilisateur.initiales,
                 style: AppTextStyles.body.copyWith(
                   color:      AppColors.primary,
                   fontWeight: FontWeight.bold,
@@ -406,15 +420,16 @@ class _UtilisateurCard extends StatelessWidget {
                 Text(
                   utilisateur.nomComplet.isNotEmpty
                       ? utilisateur.nomComplet
-                      : utilisateur.username,
+                      : utilisateur.nomAffichage,
                   style: AppTextStyles.body.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Text(
-                  utilisateur.email,
-                  style: AppTextStyles.caption,
-                ),
+                if (utilisateur.email != null)
+                  Text(
+                    utilisateur.email!,
+                    style: AppTextStyles.caption,
+                  ),
                 const SizedBox(height: 4),
                 Wrap(
                   spacing: 4,

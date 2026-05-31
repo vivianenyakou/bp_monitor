@@ -183,7 +183,7 @@ class _AlertesScreenState extends ConsumerState<AlertesScreen> {
     if (confirmed == true) {
       await ref.read(alertesProvider.notifier).acquitter(
             alerte.id,
-            user.nomComplet.isNotEmpty ? user.nomComplet : user.username,
+            user.nomAffichage,
           );
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

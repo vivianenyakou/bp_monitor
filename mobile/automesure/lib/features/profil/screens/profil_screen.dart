@@ -122,7 +122,7 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
           ProfilInfoItem(
             icon:  Icons.person_outline,
             label: 'Nom complet',
-            value: user.nomComplet.isNotEmpty ? user.nomComplet : user.username,
+            value: user.nomAffichage,
           ),
           ProfilInfoItem(icon: Icons.email_outlined,   label: 'Email',      value: user.email),
           ProfilInfoItem(icon: Icons.phone_outlined,   label: 'Téléphone',  value: user.phoneNumber),
@@ -187,7 +187,7 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
             label: 'Nom complet',
             value: user.nomComplet.isNotEmpty
                 ? 'Dr. ${user.nomComplet}'
-                : 'Dr. ${user.username}',
+                : 'Dr. ${user.nomAffichage}',
           ),
           ProfilInfoItem(icon: Icons.email_outlined, label: 'Email',     value: user.email),
           ProfilInfoItem(icon: Icons.phone_outlined, label: 'Téléphone', value: user.phoneNumber),
@@ -296,7 +296,7 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
           ProfilInfoItem(
             icon:  Icons.person_outline,
             label: 'Nom complet',
-            value: user.nomComplet.isNotEmpty ? user.nomComplet : user.username,
+            value: user.nomAffichage,
           ),
           ProfilInfoItem(icon: Icons.email_outlined, label: 'Email',     value: user.email),
           ProfilInfoItem(icon: Icons.phone_outlined, label: 'Téléphone', value: user.phoneNumber),

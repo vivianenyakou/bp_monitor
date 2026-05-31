@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'core/constants/app_colors.dart';
-import 'features/admin/screens/admin_roles_screen.dart';
+//import 'features/admin/screens/admin_roles_screen.dart';
 import 'features/admin/screens/admin_screen.dart';
 import 'features/historique/screens/historique_screen.dart';
 import 'features/medecin/screens/dashboard_medecin_screen.dart';
@@ -82,10 +82,10 @@ final _router = GoRouter(
       path: '/admin/utilisateurs',
       builder: (_, __) => const AdminUtilisateursScreen(),
     ),
-    GoRoute(
-      path: '/admin/roles',
-      builder: (_, __) => const AdminRolesScreen(),
-    ),
+    // GoRoute(
+    //   path: '/admin/roles',
+    //   builder: (_, __) => const AdminRolesScreen(),
+    // ),
     GoRoute(
       path: '/admin',
       builder: (_, __) => const AdminScreen(),

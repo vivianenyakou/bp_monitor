@@ -40,7 +40,9 @@ class ListerPatientsUseCase:
             "id":                patient.id,
             "user_id":           patient.user_id,
             "nom_complet":       f"{user.first_name or ''} {user.last_name or ''}".strip()
-                                 or user.username,
+                                 or user.username
+                                 or user.phone_number
+                                 or "Utilisateur",
             "username":          user.username,
             "email":             user.email,
             "telephone":         user.phone_number,

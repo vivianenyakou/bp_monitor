@@ -13,8 +13,8 @@ class ApiClient {
   void init() {
     _dio = Dio(BaseOptions(
       baseUrl: AppConstants.baseUrl,
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 10),
+      connectTimeout: const Duration(minutes: 10),
+      receiveTimeout: const Duration(minutes: 10),
       headers: {'Content-Type': 'application/json'},
     ));
 
@@ -29,10 +29,6 @@ class ApiClient {
           handler.next(options);
         },
         onError: (error, handler) async {
-            print('[API Error] ${error.message}');
-            print('[API Error] ${error.response?.statusCode}');
-            print('[API Error] ${error.type}');
-            print('[API Error] ${error.error}');
           if (error.response?.statusCode == 401) {
             await _storage.deleteAll();
           }

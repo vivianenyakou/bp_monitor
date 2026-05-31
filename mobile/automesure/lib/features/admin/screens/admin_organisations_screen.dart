@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../providers/admin_provider.dart';
 
@@ -57,9 +59,10 @@ class _AdminOrganisationsScreenState
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text('🏥',
-                              style: TextStyle(fontSize: 60)),
-                          const SizedBox(height: 16),
+                          // const Text(
+                          //   '🏥',
+                          //     style: TextStyle(fontSize: 60)),
+                          //const SizedBox(height: 16),
                           Text(
                             'Aucune organisation',
                             style: AppTextStyles.heading3,
@@ -142,12 +145,17 @@ class _AdminOrganisationsScreenState
                 _buildField('Code *',    codeCtrl,   Icons.tag,
                     hint: 'Ex: HOPITAL_LOME'),
                 const SizedBox(height: 12),
-                _buildField('Adresse',   adresseCtrl, Icons.location_on_outlined),
+                _buildField('Adresse *',   adresseCtrl, Icons.location_on_outlined),
                 const SizedBox(height: 12),
-                _buildField('Téléphone', telCtrl,    Icons.phone_outlined,
-                    keyboard: TextInputType.phone),
+                _buildField('Téléphone *', telCtrl,    Icons.phone_outlined,
+                    hint: '00 00 00 00',
+                    keyboard: TextInputType.phone,
+                    prefixText: '${AppConstants.phoneCountryCode} ',
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9 ]')),
+                    ]),
                 const SizedBox(height: 12),
-                _buildField('Email',     emailCtrl,  Icons.email_outlined,
+                _buildField('Email *',     emailCtrl,  Icons.email_outlined,
                     keyboard: TextInputType.emailAddress),
                 const SizedBox(height: 24),
 
@@ -227,6 +235,8 @@ class _AdminOrganisationsScreenState
     IconData icon, {
     String? hint,
     TextInputType keyboard = TextInputType.text,
+    String? prefixText,
+    List<TextInputFormatter>? inputFormatters,
   }) =>
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -238,9 +248,15 @@ class _AdminOrganisationsScreenState
           TextField(
             controller:   ctrl,
             keyboardType: keyboard,
+            inputFormatters: inputFormatters,
             decoration: InputDecoration(
               hintText:   hint,
               prefixIcon: Icon(icon, color: AppColors.textSecondary),
+              prefixText: prefixText,
+              prefixStyle: AppTextStyles.body.copyWith(
+                color:      AppColors.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
               filled:     true,
               fillColor:  AppColors.background,
               border: OutlineInputBorder(
@@ -266,34 +282,40 @@ class _OrganisationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color:        Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color:     Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-          ),
-        ],
-      ),
-      child: Row(
+    final hasDetails = _hasText(organisation.adresse) ||
+        _hasText(organisation.telephone) ||
+        _hasText(organisation.email);
+
+    return GestureDetector(
+      onTap: () => _showDetails(context),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color:        Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color:     Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+            ),
+          ],
+        ),
+        child: Row(
         children: [
           // Logo
-          Container(
-            width:  52,
-            height: 52,
-            decoration: BoxDecoration(
-              color:        AppColors.primarySurface,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Center(
-              child: Text('🏥', style: TextStyle(fontSize: 24)),
-            ),
-          ),
-          const SizedBox(width: 12),
+          // Container(
+          //   width:  52,
+          //   height: 52,
+          //   decoration: BoxDecoration(
+          //     color:        AppColors.primarySurface,
+          //     borderRadius: BorderRadius.circular(12),
+          //   ),
+          //   // child: const Center(
+          //   //   child: Text('🏥', style: TextStyle(fontSize: 24)),
+          //   // ),
+          // ),
+          // const SizedBox(width: 12),
 
           // Infos
           Expanded(
@@ -346,11 +368,46 @@ class _OrganisationCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                if (organisation.adresse != null)
-                  Text(
-                    organisation.adresse!,
-                    style: AppTextStyles.caption,
+                if (hasDetails) ...[
+                  const SizedBox(height: 8),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      const spacing = 12.0;
+                      final itemWidth = (constraints.maxWidth - spacing) / 2;
+
+                      return Wrap(
+                        spacing: spacing,
+                        runSpacing: 6,
+                        children: [
+                          if (_hasText(organisation.adresse))
+                            SizedBox(
+                              width: itemWidth,
+                              child: _detailItem(
+                                Icons.location_on_outlined,
+                                organisation.adresse!,
+                              ),
+                            ),
+                          if (_hasText(organisation.telephone))
+                            SizedBox(
+                              width: itemWidth,
+                              child: _detailItem(
+                                Icons.phone_outlined,
+                                organisation.telephone!,
+                              ),
+                            ),
+                          if (_hasText(organisation.email))
+                            SizedBox(
+                              width: itemWidth,
+                              child: _detailItem(
+                                Icons.email_outlined,
+                                organisation.email!,
+                              ),
+                            ),
+                        ],
+                      );
+                    },
                   ),
+                ],
               ],
             ),
           ),
@@ -358,6 +415,147 @@ class _OrganisationCard extends StatelessWidget {
             Icons.arrow_forward_ios,
             size:  16,
             color: AppColors.textSecondary,
+          ),
+        ],
+        ),
+      ),
+    );
+  }
+
+  void _showDetails(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _OrganisationDetailsWidget(organisation: organisation),
+    );
+  }
+
+  bool _hasText(String? value) => value != null && value.trim().isNotEmpty;
+
+  Widget _detailItem(IconData icon, String value) => Row(
+        children: [
+          Icon(icon, size: 14, color: AppColors.textSecondary),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              value.trim(),
+              style: AppTextStyles.caption,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      );
+}
+
+class _OrganisationDetailsWidget extends StatelessWidget {
+  final Organisation organisation;
+
+  const _OrganisationDetailsWidget({required this.organisation});
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Container(
+        margin: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color:        Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width:  36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color:        AppColors.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(organisation.nom, style: AppTextStyles.heading3),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                _badge(
+                  organisation.code,
+                  AppColors.primarySurface,
+                  AppColors.primary,
+                ),
+                const SizedBox(width: 8),
+                _badge(
+                  organisation.estActif ? 'Active' : 'Inactive',
+                  organisation.estActif
+                      ? AppColors.normaleLight
+                      : AppColors.critiqueLight,
+                  organisation.estActif
+                      ? AppColors.normale
+                      : AppColors.critique,
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _detailRow(
+              Icons.location_on_outlined,
+              'Adresse',
+              organisation.adresse,
+            ),
+            _detailRow(
+              Icons.phone_outlined,
+              'Téléphone',
+              organisation.telephone,
+            ),
+            _detailRow(
+              Icons.email_outlined,
+              'Email',
+              organisation.email,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _badge(String text, Color background, Color foreground) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color:        background,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Text(
+          text,
+          style: AppTextStyles.caption.copyWith(
+            color:      foreground,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+
+  Widget _detailRow(IconData icon, String label, String? value) {
+    final text = value?.trim();
+    if (text == null || text.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: AppColors.textSecondary, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: AppTextStyles.caption),
+                const SizedBox(height: 2),
+                Text(text, style: AppTextStyles.body),
+              ],
+            ),
           ),
         ],
       ),

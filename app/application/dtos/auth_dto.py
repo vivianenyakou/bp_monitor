@@ -28,8 +28,8 @@ class TokenDTO:
 @dataclass
 class UtilisateurDTO:
     id: int
-    username: str
-    email: str
+    username: str | None
+    email: str | None
     first_name: str | None
     last_name: str | None
     phone_number: str | None
@@ -40,8 +40,8 @@ class UtilisateurDTO:
 
 @dataclass
 class CreerUtilisateurDTO:
-    username: str
-    email: str
+    username: str | None
+    email: str | None
     password: str
     role: str                          # patient, medecin, admin
     first_name: str | None = None

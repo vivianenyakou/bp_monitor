@@ -99,9 +99,8 @@ class BPBottomNav extends ConsumerWidget {
         onDestinationSelected: (i) {
           switch (i) {
             case 0: context.go('/admin');                break;
-            case 1: context.go('/admin/roles');          break;
-            case 2: context.go('/admin/organisations');  break;
-            case 3: context.go('/admin/utilisateurs');   break;
+            case 1: context.go('/admin/organisations');  break;
+            case 2: context.go('/admin/utilisateurs');   break;
           }
         },
         destinations: const [
@@ -110,11 +109,11 @@ class BPBottomNav extends ConsumerWidget {
             selectedIcon: Icon(Icons.home, color: AppColors.primary),
             label:        'Accueil',
           ),
-          NavigationDestination(
-            icon:         Icon(Icons.policy_outlined),
-            selectedIcon: Icon(Icons.policy, color: AppColors.primary),
-            label:        'Rôles',
-          ),
+          // NavigationDestination(
+          //   icon:         Icon(Icons.policy_outlined),
+          //   selectedIcon: Icon(Icons.policy, color: AppColors.primary),
+          //   label:        'Rôles',
+          // ),
           NavigationDestination(
             icon:         Icon(Icons.local_hospital_outlined),
             selectedIcon: Icon(Icons.local_hospital, color: AppColors.primary),

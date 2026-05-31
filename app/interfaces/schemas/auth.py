@@ -53,8 +53,8 @@ class TokenSchema(BaseModel):
 
 class UtilisateurConnecteSchema(BaseModel):
     id: int
-    username: str
-    email: str
+    username: str | None
+    email: str | None
     first_name: str | None
     last_name: str | None
     roles: list[str]
@@ -63,13 +63,13 @@ class UtilisateurConnecteSchema(BaseModel):
     model_config = {"from_attributes": True}
 
 class CreerUtilisateurSchema(BaseModel):
-    username: str = Field(..., min_length=3, max_length=50)
-    email: EmailStr
+    username: str | None = Field(None, min_length=3, max_length=50)
+    email: EmailStr | None = None
     password: str = Field(..., min_length=6, max_length=72)
     role: RoleUtilisateur = RoleUtilisateur.PATIENT
     first_name: str | None = None
     last_name: str | None = None
-    phone_number: str | None = None
+    phone_number: str = Field(..., min_length=1)
     organisation_id: int | None = None
     specialite: str | None = None
 

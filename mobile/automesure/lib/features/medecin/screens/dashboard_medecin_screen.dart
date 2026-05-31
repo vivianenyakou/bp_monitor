@@ -270,7 +270,7 @@ class _DashboardMedecinScreenState
     if (confirmed == true) {
       final nom = user.nomComplet.isNotEmpty
           ? 'Dr. ${user.nomComplet}'
-          : 'Dr. ${user.username}';
+          : 'Dr. ${user.nomAffichage}';
       await ref.read(medecinProvider.notifier).acquitter(alerte.id, nom);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

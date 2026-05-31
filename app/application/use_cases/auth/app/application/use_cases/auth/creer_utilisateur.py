@@ -2,7 +2,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.application.dtos.auth_dto import CreerUtilisateurDTO
-from app.core.exceptions import ConflictError, NotFoundError
+from app.application.services.phone_number_formatter import normaliser_telephone_togo
+from app.core.exceptions import ApplicationException, ConflictError, NotFoundError
 from app.domain.enums.role_enum import RoleUtilisateur
 from app.infrastructure.auth.password_service import PasswordService
 from app.infrastructure.db.session import AsyncSessionFactory
@@ -11,19 +12,17 @@ from app.infrastructure.models.auth.user import UserModel
 from app.infrastructure.models.bp.patient import PatientModel
 
 
-
 class CreerUtilisateurUseCase:
     async def executer(self, dto: CreerUtilisateurDTO) -> dict:
         async with AsyncSessionFactory() as session:
+            email = dto.email.strip() if dto.email else None
+            if email:
+                result = await session.execute(
+                    select(UserModel).where(UserModel.email == email)
+                )
+                if result.scalar_one_or_none():
+                    raise ConflictError("Un compte avec cet email existe deja.")
 
-            # 1. Vérifier que l'email n'existe pas
-            result = await session.execute(
-                select(UserModel).where(UserModel.email == dto.email)
-            )
-            if result.scalar_one_or_none():
-                raise ConflictError("Un compte avec cet email existe déjà.")
-
-            # 2. Vérifier le rôle
             result = await session.execute(
                 select(RoleModel)
                 .where(RoleModel.name == dto.role)
@@ -31,17 +30,15 @@ class CreerUtilisateurUseCase:
             )
             role = result.scalar_one_or_none()
             if not role:
-                raise NotFoundError(f"Rôle '{dto.role}' introuvable.")
+                raise NotFoundError(f"Role '{dto.role}' introuvable.")
 
-            # 3. Normaliser le téléphone
-            phone = None
-            if dto.phone_number:
-                phone = dto.phone_number.strip().replace(" ", "").replace("-", "")
+            phone = normaliser_telephone_togo(dto.phone_number)
+            if not phone:
+                raise ApplicationException("Le numero de telephone est obligatoire.")
 
-            # 4. Créer l'utilisateur
             user = UserModel(
-                username=dto.username,
-                email=dto.email,
+                username=dto.username.strip() if dto.username else None,
+                email=email,
                 password_hash=PasswordService.hasher(dto.password),
                 first_name=dto.first_name,
                 last_name=dto.last_name,
@@ -53,7 +50,6 @@ class CreerUtilisateurUseCase:
             session.add(user)
             await session.flush()
 
-            # 5. Créer le profil patient si rôle = patient
             if dto.role == RoleUtilisateur.PATIENT:
                 patient = PatientModel(
                     user_id=user.id,
@@ -70,5 +66,5 @@ class CreerUtilisateurUseCase:
                 "email": user.email,
                 "role": dto.role,
                 "organisation_id": user.organisation_id,
-                "message": f"Utilisateur créé avec le rôle '{dto.role}'.",
+                "message": f"Utilisateur cree avec le role '{dto.role}'.",
             }

@@ -190,10 +190,11 @@ class _ChoisirMedecinSheetState extends ConsumerState<ChoisirMedecinSheet>
                                 medecin.specialite!,
                                 style: AppTextStyles.caption,
                               ),
-                            Text(
-                              medecin.email,
-                              style: AppTextStyles.caption,
-                            ),
+                            if (medecin.email != null)
+                              Text(
+                                medecin.email!,
+                                style: AppTextStyles.caption,
+                              ),
                           ],
                         ),
                       ),

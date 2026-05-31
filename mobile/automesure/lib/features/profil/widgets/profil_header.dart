@@ -38,18 +38,17 @@ class ProfilHeader extends StatelessWidget {
 
           // Nom
           Text(
-            user.nomComplet.isNotEmpty
-                ? user.nomComplet
-                : user.username,
+            user.nomAffichage,
             style: AppTextStyles.heading3.copyWith(color: AppColors.textPrimary),
           ),
-          const SizedBox(height: 4),
+          if (user.email != null) const SizedBox(height: 4),
 
           // Email
-          Text(
-            user.email,
-            style: AppTextStyles.caption.copyWith(color: AppColors.textPrimary),
-          ),
+          if (user.email != null)
+            Text(
+              user.email!,
+              style: AppTextStyles.caption.copyWith(color: AppColors.textPrimary),
+            ),
           const SizedBox(height: 8),
 
           // Rôles
@@ -82,6 +81,6 @@ class ProfilHeader extends StatelessWidget {
     if (user.firstName != null && user.lastName != null) {
       return '${user.firstName![0]}${user.lastName![0]}'.toUpperCase();
     }
-    return user.username.substring(0, 2).toUpperCase();
+    return user.initiales;
   }
 }

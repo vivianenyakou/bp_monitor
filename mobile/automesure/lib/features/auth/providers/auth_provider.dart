@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_endpoints.dart';
+import '../../../core/utils/phone_number_formatter.dart';
 import '../models/auth_model.dart';
 
 // State
@@ -64,6 +65,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
+      final formattedPhoneNumber = formatTogoPhoneNumber(phoneNumber);
       final response = await _api.post(
         ApiEndpoints.register,
         data: {
@@ -72,7 +74,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
           'password': password,
           if (firstName != null) 'first_name': firstName,
           if (lastName != null) 'last_name': lastName,
-          if (phoneNumber != null) 'phone_number': phoneNumber,
+          if (formattedPhoneNumber != null) 'phone_number': formattedPhoneNumber,
           if (organisationCode != null)
             'organisation_code': organisationCode,
         },

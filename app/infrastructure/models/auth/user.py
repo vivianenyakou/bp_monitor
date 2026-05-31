@@ -11,7 +11,7 @@ class UserModel(AuditableEntity):
     username       = Column(String(50), nullable=True)
     last_name      = Column(String(50), nullable=True)
     first_name     = Column(String(50), nullable=True)
-    email          = Column(String(120), unique=True, nullable=False)
+    email          = Column(String(120), unique=True, nullable=True)
     password_hash  = Column(String(255), nullable=False)
     phone_number   = Column(String(20), nullable=False)
 

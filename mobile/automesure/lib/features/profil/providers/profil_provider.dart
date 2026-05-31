@@ -42,14 +42,14 @@ class ProfilPatient {
 class Medecin {
   final int id;
   final String nomComplet;
-  final String email;
+  final String? email;
   final String? telephone;
   final String? specialite;
 
   const Medecin({
     required this.id,
     required this.nomComplet,
-    required this.email,
+    this.email,
     this.telephone,
     this.specialite,
   });

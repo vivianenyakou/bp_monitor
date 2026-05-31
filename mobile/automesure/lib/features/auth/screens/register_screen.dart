@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/network/api_endpoints.dart';
 import '../providers/auth_provider.dart';
@@ -149,8 +151,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                 _buildField(
                   label: 'Téléphone', controller: _phoneCtrl,
-                  hint: '+228 90 00 00 00', icon: Icons.phone_outlined,
+                  hint: '90 00 00 00', icon: Icons.phone_outlined,
                   keyboard: TextInputType.phone, required: false,
+                  prefixText: '${AppConstants.phoneCountryCode} ',
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9 ]')),
+                  ],
                 ),
                 const SizedBox(height: 16),
 
@@ -320,6 +326,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     required IconData icon,
     TextInputType keyboard = TextInputType.text,
     bool required = true,
+    String? prefixText,
+    List<TextInputFormatter>? inputFormatters,
   }) =>
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -329,7 +337,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           TextFormField(
             controller:  controller,
             keyboardType: keyboard,
-            decoration:  _inputDecoration(hint: hint, icon: icon),
+            inputFormatters: inputFormatters,
+            decoration:  _inputDecoration(
+              hint: hint,
+              icon: icon,
+              prefixText: prefixText,
+            ),
             validator:   required
                 ? (v) => v == null || v.isEmpty ? 'Champ requis' : null
                 : null,
@@ -340,11 +353,20 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Widget _buildLabel(String label) =>
       Text(label, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600));
 
-  InputDecoration _inputDecoration({required String hint, required IconData icon}) =>
+  InputDecoration _inputDecoration({
+    required String hint,
+    required IconData icon,
+    String? prefixText,
+  }) =>
       InputDecoration(
         hintText:    hint,
         hintStyle:   AppTextStyles.bodySecondary,
         prefixIcon:  Icon(icon, color: AppColors.textSecondary),
+        prefixText:  prefixText,
+        prefixStyle: AppTextStyles.body.copyWith(
+          color:      AppColors.textPrimary,
+          fontWeight: FontWeight.w600,
+        ),
         filled:      true,
         fillColor:   AppColors.background,
         border: OutlineInputBorder(
