@@ -3,8 +3,8 @@ from dataclasses import dataclass
 
 @dataclass
 class RegisterDTO:
-    username: str
-    email: str
+    username: str | None = None
+    email: str | None = None
     password: str
     first_name: str | None = None
     last_name: str | None = None
@@ -24,6 +24,8 @@ class TokenDTO:
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
+    username: str | None = None
+    email: str | None = None
 
 
 @dataclass

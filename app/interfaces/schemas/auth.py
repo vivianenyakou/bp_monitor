@@ -10,22 +10,16 @@ class RegisterSchema(BaseModel):
     first_name: str | None = None
     last_name: str | None = None
     phone_number: str | None = None
-    organisation_code: str | None = Field(
-        None,
-        description="Code de l'organisation (clinique/hôpital)"
-    )
+    organisation_code: str | None = None
     qr_code_token: str | None = None
 
     model_config = {
         "json_schema_extra": {
             "example": {
-                "username": "ama.koffi",
-                "email": "ama.koffi@email.com",
                 "password": "motdepasse123",
                 "first_name": "Ama",
                 "last_name": "Koffi",
-                "phone_number": "+22898295689",
-                "organisation_code": "HOPITAL_LOME",
+                "phone_number": "",
                 "qr_code_token": "ZZZaaaAAA111222333",
             }
         }
