@@ -3,9 +3,9 @@ from dataclasses import dataclass
 
 @dataclass
 class RegisterDTO:
+    password: str
     username: str | None = None
     email: str | None = None
-    password: str
     first_name: str | None = None
     last_name: str | None = None
     phone_number: str | None = None
@@ -43,9 +43,9 @@ class UtilisateurDTO:
 
 @dataclass
 class CreerUtilisateurDTO:
+    password: str
     username: str | None
     email: str | None
-    password: str
     role: str                          # patient, medecin, admin
     first_name: str | None = None
     last_name: str | None = None

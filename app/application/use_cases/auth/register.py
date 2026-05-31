@@ -23,6 +23,22 @@ from datetime import datetime
 
 
 # ── Fonctions utilitaires ─────────────────────────────────────────
+def _normaliser_telephone(telephone: str) -> str:
+    tel = telephone.strip().replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
+
+    if tel.startswith("+"):
+        return tel
+
+    if tel.startswith("00228"):
+        return "+" + tel[2:]
+    if tel.startswith("228"):
+        return "+" + tel
+
+    if len(tel) == 8:
+        return "+228" + tel
+
+    return "+228" + tel
+
 def _normaliser_texte(texte: str) -> str:
     """Supprime les accents et caractères spéciaux."""
     texte = unicodedata.normalize('NFD', texte)
@@ -56,7 +72,6 @@ async def _generer_username(
 
     return username
 
-
 async def _generer_email(
     session,
     username: str,
@@ -89,10 +104,10 @@ class RegisterUseCase:
         async with AsyncSessionFactory() as session:
 
             # 1. Normaliser le téléphone
+         # Après
             phone = None
             if dto.phone_number:
-                phone = dto.phone_number.strip().replace(" ", "").replace("-", "")
-
+                phone = _normaliser_telephone(dto.phone_number)
             # 2. Trouver l'organisation
             organisation         = None
             medecin_id_depuis_qr = None
