@@ -14,7 +14,6 @@ from app.domain.enums.blood_group import BloodGroup
 from app.infrastructure.models.multi_tenant.organisations import OrganisationModel
 from app.infrastructure.auth.password_service import PasswordService
 
-
 # ── Permissions ───────────────────────────────────────────────────
 PERMISSIONS = [
     # Mesures

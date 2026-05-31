@@ -10,6 +10,7 @@ class RegisterDTO:
     last_name: str | None = None
     phone_number: str | None = None
     organisation_code: str | None = None
+    qrcode_token: str | None = None
 
 
 @dataclass

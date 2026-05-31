@@ -9,10 +9,12 @@ from app.infrastructure.models.auth.token import TokenModel
 from app.infrastructure.models.auth.user import UserModel
 from app.infrastructure.models.multi_tenant.organisations import OrganisationModel
 from app.infrastructure.models.multi_tenant.invitation import InvitationModel
+from app.infrastructure.models.multi_tenant.qrcode import QRCodeModel
 
 __all__ = [
     "UserModel", "RoleModel", "PermissionModel",
     "PatientModel", "TokenModel", "AuditTrailModel",
-    "MesureModel", "AlerteModel", "OrganisationModel",
-    "role_permissions", "user_roles", "InvitationModel"
+    "MesureModel", "AlerteModel",
+    "OrganisationModel","role_permissions",
+    "user_roles", "InvitationModel","QRCodeModel",
 ]

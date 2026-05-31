@@ -14,6 +14,7 @@ class RegisterSchema(BaseModel):
         None,
         description="Code de l'organisation (clinique/hôpital)"
     )
+    qr_code_token: str | None = None
 
     model_config = {
         "json_schema_extra": {
@@ -24,7 +25,8 @@ class RegisterSchema(BaseModel):
                 "first_name": "Ama",
                 "last_name": "Koffi",
                 "phone_number": "+22898295689",
-                "organisation_code": "HOPITAL_LOME"
+                "organisation_code": "HOPITAL_LOME",
+                "qr_code_token": "ZZZaaaAAA111222333",
             }
         }
     }
