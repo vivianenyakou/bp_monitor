@@ -62,6 +62,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     String? lastName,
     String? phoneNumber,
     String? organisationCode,
+    String? qrToken,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
@@ -77,6 +78,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
           if (formattedPhoneNumber != null) 'phone_number': formattedPhoneNumber,
           if (organisationCode != null)
             'organisation_code': organisationCode,
+          if (qrToken != null) 'qr_token': qrToken,
         },
       );
       final token = TokenModel.fromJson(response.data);

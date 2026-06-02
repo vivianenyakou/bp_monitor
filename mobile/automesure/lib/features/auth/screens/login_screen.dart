@@ -193,8 +193,46 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                   ),
                 ),
-                const SizedBox(height: 24),
 
+                const SizedBox(height: 16),
+
+                // Divider
+                Row(
+                  children: [
+                    const Expanded(child: Divider()),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Text('ou', style: AppTextStyles.bodySecondary),
+                    ),
+                    const Expanded(child: Divider()),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Bouton Scanner QR
+                SizedBox(
+                  width:  double.infinity,
+                  height: 52,
+                  child: OutlinedButton.icon(
+                    onPressed: () => context.go('/scanner'),
+                    icon: const Icon(
+                      Icons.qr_code_scanner,
+                      color: AppColors.primary,
+                    ),
+                    label: Text(
+                      'Scanner le QR code de ma clinique',
+                      style: AppTextStyles.body.copyWith(
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.primary),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                ),
                 // Lien register
                 Center(
                   child: Row(

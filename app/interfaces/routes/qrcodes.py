@@ -20,6 +20,13 @@ from app.interfaces.schemas.qrcode import (
     QRCodeInfoSchema,
 )
 
+from fastapi.responses import Response
+from app.application.use_cases.qrcode.generer_pdf import GenererPDFQRCodeUseCase
+
+from app.infrastructure.pdf.qrcode_pdf import  generer_pdf_qrcode
+from reportlab.lib.pagesizes import A4
+
+
 router = APIRouter(prefix="/qrcodes", tags=["QR Codes"])
 
 
@@ -106,5 +113,32 @@ async def desactiver_qrcode(
             qrcode.est_actif = False
             await session.commit()
             return {"message": "QR code désactivé avec succès."}
+    except BPMonitorException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.message)
+
+@router.get(
+    "/{qrcode_id}/pdf",
+    summary="Télécharger le PDF du QR code",
+)
+async def telecharger_pdf(
+    qrcode_id: int,
+    current_user: UserModel = Depends(require_any_role("admin", "super_admin")),
+):
+    """
+    Génère et retourne un PDF avec le QR code.
+    Prêt à imprimer et afficher en clinique.
+    """
+    try:
+        use_case  = GenererPDFQRCodeUseCase()
+        pdf_bytes, nom_fichier = await use_case.executer(qrcode_id)
+
+        return Response(
+            content=     pdf_bytes,
+            media_type=  "application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename={nom_fichier}",
+                "Content-Length":      str(len(pdf_bytes)),
+            },
+        )
     except BPMonitorException as e:
         raise HTTPException(status_code=e.status_code, detail=e.message)

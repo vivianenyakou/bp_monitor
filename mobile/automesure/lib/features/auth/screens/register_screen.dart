@@ -18,7 +18,9 @@ class _Organisation {
 }
 
 class RegisterScreen extends ConsumerStatefulWidget {
-  const RegisterScreen({super.key});
+  final String? qrToken;
+
+  const RegisterScreen({super.key, this.qrToken});
 
   @override
   ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
@@ -37,11 +39,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   List<_Organisation> _organisations = [];
   _Organisation?      _orgSelectionnee;
   bool                _loadingOrgs = true;
+  String? _organisationNom;
+  String? _medecinNom;
+  bool    _qrValide = false;
 
   @override
   void initState() {
     super.initState();
     _chargerOrganisations();
+
+    if (widget.qrToken != null) {
+      _chargerInfoQR(widget.qrToken!);
+    }
   }
 
   Future<void> _chargerOrganisations() async {
@@ -58,7 +67,27 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       setState(() => _loadingOrgs = false);
     }
   }
+  Future<void> _chargerInfoQR(String token) async {
+      try {
+        final api      = ref.read(apiClientProvider);
+        final response = await api.get(ApiEndpoints.validerQRCode(token));
+        final data     = response.data;
 
+        if (data['est_valide'] == true) {
+          setState(() {
+            _organisationNom = data['organisation_nom'];
+            _medecinNom      = data['medecin_nom'];
+            _qrValide        = true;
+
+            // Désélectionner l'organisation manuelle
+            // car le QR gère tout automatiquement
+            _orgSelectionnee = null;
+          });
+        }
+      } catch (e) {
+        print('[QR] Erreur validation : $e');
+      }
+    }
   @override
   void dispose() {
     _usernameCtrl.dispose();
@@ -80,6 +109,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       lastName:         _lastCtrl.text.trim(),
       phoneNumber:      _phoneCtrl.text.trim(),
       organisationCode: _orgSelectionnee?.code,
+      qrToken:         widget.qrToken,
     );
     if (ok && mounted) {
       final user  = ref.read(authProvider).user;
@@ -118,7 +148,70 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 Text('Créer un compte', style: AppTextStyles.heading1),
                 const SizedBox(height: 8),
                 Text('Rejoignez Auto-Mésure santé', style: AppTextStyles.bodySecondary),
-                const SizedBox(height: 32),
+                const SizedBox(height: 16),
+                // ── Bannière QR code ─────────────────────────────────
+                if (widget.qrToken != null)
+                  Container(
+                    margin:  const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color:        _qrValide
+                          ? AppColors.primarySurface
+                          : AppColors.eleveeLight,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: _qrValide
+                            ? AppColors.primary
+                            : AppColors.elevee,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Text(
+                          _qrValide ? '✅' : '⏳',
+                          style: const TextStyle(fontSize: 24),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _qrValide
+                                    ? 'QR code validé !'
+                                    : 'Validation en cours...',
+                                style: AppTextStyles.body.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: _qrValide
+                                      ? AppColors.primary
+                                      : AppColors.elevee,
+                                ),
+                              ),
+                              if (_qrValide && _organisationNom != null)
+                                Text(
+                                  '🏥 $_organisationNom',
+                                  style: AppTextStyles.caption,
+                                ),
+                              if (_qrValide && _medecinNom != null)
+                                Text(
+                                  '👨‍⚕️ $_medecinNom',
+                                  style: AppTextStyles.caption,
+                                ),
+                              if (_qrValide)
+                                Text(
+                                  'Organisation et médecin assignés automatiquement',
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                const SizedBox(height: 16),
 
                 // Prénom + Nom
                 Row(

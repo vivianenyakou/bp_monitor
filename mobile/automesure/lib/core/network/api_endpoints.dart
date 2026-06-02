@@ -28,4 +28,6 @@ class ApiEndpoints {
   static const organisationsPubliques = '/organisations/publiques';
   static const utilisateurs           = '/auth/utilisateurs';
   static const creerUtilisateur       = '/auth/utilisateurs';
+  static String validerQRCode(String token) =>
+    '/qrcodes/valider/$token';
 }
