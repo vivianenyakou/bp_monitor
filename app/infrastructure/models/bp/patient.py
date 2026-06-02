@@ -36,3 +36,4 @@ class PatientModel(AuditableEntity):
     organisation = relationship("OrganisationModel", back_populates="patients")
     mesures = relationship("MesureModel", back_populates="patient")
     alertes = relationship("AlerteModel", back_populates="patient")
+    sessions = relationship("SessionModel", back_populates="patient")
