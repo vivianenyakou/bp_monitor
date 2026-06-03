@@ -37,8 +37,8 @@ class OnboardingPage extends StatelessWidget {
         children: [
           // Emoji illustration
           Container(
-            width: 120,
-            height: 120,
+            width: 150,
+            height: 150,
             decoration: const BoxDecoration(
               color: AppColors.primarySurface,
               shape: BoxShape.circle,

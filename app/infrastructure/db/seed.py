@@ -89,27 +89,27 @@ ORGANISATIONS = [
         "telephone": "+22893330326",
         "email": "contact@hopital-lome.tg",
     },
-    {
-        "nom": "Clinique Biasa",
-        "code": "CLINIQUE_BIASA",
-        "adresse": "Lomé, Togo",
-        "telephone": "+22898295689",
-        "email": "contact@biasa.tg",
-    },
-    {
-        "nom": "Centre de Santé de Kara",
-        "code": "CENTRE_KARA",
-        "adresse": "Kara, Togo",
-        "telephone": "+22893330326",
-        "email": "contact@kara.tg",
-    },
-    {
-        "nom": "Hôpital de Sokodé",
-        "code": "HOPITAL_SOKODE",
-        "adresse": "Sokodé, Togo",
-        "telephone": "+22893330326",
-        "email": "contact@sokode.tg",
-    },
+    # {
+    #     "nom": "Clinique Biasa",
+    #     "code": "CLINIQUE_BIASA",
+    #     "adresse": "Lomé, Togo",
+    #     "telephone": "+22898295689",
+    #     "email": "contact@biasa.tg",
+    # },
+    # {
+    #     "nom": "Centre de Santé de Kara",
+    #     "code": "CENTRE_KARA",
+    #     "adresse": "Kara, Togo",
+    #     "telephone": "+22893330326",
+    #     "email": "contact@kara.tg",
+    # },
+    # {
+    #     "nom": "Hôpital de Sokodé",
+    #     "code": "HOPITAL_SOKODE",
+    #     "adresse": "Sokodé, Togo",
+    #     "telephone": "+22893330326",
+    #     "email": "contact@sokode.tg",
+    # },
 ]
 
 USERS = [
@@ -124,42 +124,42 @@ USERS = [
         "email_confirmed": True,
         "role": RoleUtilisateur.SUPER_ADMIN,
     },
-    {
-        "username": "dr.kofi",
-        "first_name": "Kofi",
-        "last_name": "Mensah",
-        "email": "kofi.mensah@bpmonitor.com",
-        "password_hash": PasswordService.hasher("secret"),  # secret
-        "phone_number": "+22898295689",
-        "is_active": True,
-        "email_confirmed": True,
-        "role": RoleUtilisateur.MEDECIN,
-    },
-    {
-        "username": "ama.patient",
-        "first_name": "Ama",
-        "last_name": "Koffi",
-        "email": "ama.koffi@bpmonitor.com",
-        "password_hash": PasswordService.hasher("secret"),  # secret
-        "phone_number": "+22898295689",
-        "is_active": True,
-        "email_confirmed": True,
-        "role": RoleUtilisateur.PATIENT,
-    },
+    # {
+    #     "username": "dr.kofi",
+    #     "first_name": "Kofi",
+    #     "last_name": "Mensah",
+    #     "email": "kofi.mensah@bpmonitor.com",
+    #     "password_hash": PasswordService.hasher("secret"),  # secret
+    #     "phone_number": "+22898295689",
+    #     "is_active": True,
+    #     "email_confirmed": True,
+    #     "role": RoleUtilisateur.MEDECIN,
+    # },
+    # {
+    #     "username": "ama.patient",
+    #     "first_name": "Ama",
+    #     "last_name": "Koffi",
+    #     "email": "ama.koffi@bpmonitor.com",
+    #     "password_hash": PasswordService.hasher("secret"),  # secret
+    #     "phone_number": "+22898295689",
+    #     "is_active": True,
+    #     "email_confirmed": True,
+    #     "role": RoleUtilisateur.PATIENT,
+    # },
 ]
 
 
 # ── Profils patients ──────────────────────────────────────────────
-PATIENTS = [
-    {
-        "email": "ama.koffi@bpmonitor.com",
-        "gender": "F",
-        "birth_date": date(1990, 5, 15),
-        "address": "Lomé, Togo",
-        "emergency_contact": "+22898295689",
-        "blood_group": BloodGroup.A_PLUS,
-    },
-]
+# PATIENTS = [
+#     {
+#         "email": "ama.koffi@bpmonitor.com",
+#         "gender": "F",
+#         "birth_date": date(1990, 5, 15),
+#         "address": "Lomé, Togo",
+#         "emergency_contact": "+22898295689",
+#         "blood_group": BloodGroup.A_PLUS,
+#     },
+# ]
 
 
 
@@ -275,32 +275,32 @@ async def seed_users(
     return users_map
 
 
-async def seed_patients(
-    session: AsyncSession,
-    users_map: dict[str, UserModel],
-) -> None:
-    """Crée les profils patients."""
-    print("\n⏳ Création des profils patients...")
+# async def seed_patients(
+#     session: AsyncSession,
+#     users_map: dict[str, UserModel],
+# ) -> None:
+#     """Crée les profils patients."""
+#     print("\n⏳ Création des profils patients...")
 
-    for data in PATIENTS:
-        email = data.pop("email")
-        user = users_map.get(email)
+#     for data in PATIENTS:
+#         email = data.pop("email")
+#         user = users_map.get(email)
 
-        if not user:
-            print(f"   ⚠️  Utilisateur introuvable : {email}")
-            continue
+#         if not user:
+#             print(f"   ⚠️  Utilisateur introuvable : {email}")
+#             continue
 
-        result = await session.execute(
-            select(PatientModel).where(PatientModel.user_id == user.id)
-        )
-        patient = result.scalar_one_or_none()
+#         result = await session.execute(
+#             select(PatientModel).where(PatientModel.user_id == user.id)
+#         )
+#         patient = result.scalar_one_or_none()
 
-        if not patient:
-            patient = PatientModel(user_id=user.id, **data)
-            session.add(patient)
-            print(f"   ✅ Profil patient créé pour : {email}")
-        else:
-            print(f"   ⏭️  Profil patient existant pour : {email}")
+#         if not patient:
+#             patient = PatientModel(user_id=user.id, **data)
+#             session.add(patient)
+#             print(f"   ✅ Profil patient créé pour : {email}")
+#         else:
+#             print(f"   ⏭️  Profil patient existant pour : {email}")
 
 
 async def run_seed() -> None:
@@ -313,7 +313,7 @@ async def run_seed() -> None:
             roles_map = await seed_roles(session, permissions_map)
             users_map = await seed_users(session, roles_map)
             await seed_tenants(session)
-            await seed_patients(session, users_map)
+            # await seed_patients(session, users_map)
 
             await session.commit()
             print("\n✅ Seed terminé avec succès !\n")

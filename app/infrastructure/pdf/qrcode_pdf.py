@@ -58,7 +58,7 @@ def generer_pdf_qrcode(
     # ── Logo / Titre header ───────────────────────────────────────
     c.setFillColor(HexColor('#FFFFFF'))
     c.setFont("Helvetica-Bold", 28)
-    c.drawCentredString(width / 2, height - 2.5 * cm, "BP Monitor")
+    c.drawCentredString(width / 2, height - 2.5 * cm, "G-AutoBP")
 
     c.setFont("Helvetica", 14)
     c.drawCentredString(
@@ -188,7 +188,7 @@ def generer_pdf_qrcode(
 
     etapes = [
         ("1", "Scannez le QR code avec votre téléphone"),
-        ("2", "Téléchargez l'application BP Monitor"),
+        ("2", "Téléchargez l'application G-AutoBP"),
         ("3", "Créez votre compte en quelques secondes"),
         ("4", "Commencez votre suivi de tension"),
     ]
@@ -218,7 +218,7 @@ def generer_pdf_qrcode(
     c.drawCentredString(
         width / 2,
         0.4 * cm,
-        "BP Monitor — Votre santé, notre priorité | www.g-autobp.tech",
+        "G-AutoBP — Votre santé, notre priorité | www.g-autobp.tech",
     )
 
     c.save()

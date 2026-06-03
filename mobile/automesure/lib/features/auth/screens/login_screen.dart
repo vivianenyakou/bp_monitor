@@ -79,13 +79,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 20),
 
                 // Logo
                 Center(
                   child: Container(
-                    width: 80,
-                    height: 80,
+                    width: 120,
+                    height: 120,
                     decoration: const BoxDecoration(
                       color: AppColors.primarySurface,
                       shape: BoxShape.circle,
