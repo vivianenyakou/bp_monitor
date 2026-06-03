@@ -15,6 +15,7 @@ from app.core.exceptions import (
 from app.domain.enums.bp_category import (
     CategorieTA,
     NiveauAlerte,
+    PeriodeMesure,
     StatutAlerte,
 )
 from app.domain.services.analyseur_ta import AnalyseurTA
@@ -66,7 +67,7 @@ class CreerMesureSessionUseCase:
             creneau = creneau_service.creneau_actuel()
             if creneau == Creneau.HORS_CRENEAU:
                 raise ApplicationException(
-                    CreneauService.prochain_creneau()
+                    creneau_service.prochain_creneau()
                 )
 
             # 3. Obtenir ou créer la session (patient.id = PK de patients)
@@ -96,6 +97,7 @@ class CreerMesureSessionUseCase:
                 )
 
             # 7. Créer la tension
+            periode = self._periode_depuis_creneau(creneau)
             tension = TensionArterielle(
                 systolique=  dto.systolique,
                 diastolique= dto.diastolique,
@@ -110,7 +112,7 @@ class CreerMesureSessionUseCase:
                 systolique=    dto.systolique,
                 diastolique=   dto.diastolique,
                 pouls=         dto.pouls,
-                periode=       creneau.value,
+                periode=       periode,
                 jour=          jour,
                 numero_mesure= numero_mesure,
                 categorie=     categorie,
@@ -250,6 +252,13 @@ class CreerMesureSessionUseCase:
         elif jour == 3 and creneau == Creneau.SOIR:
             sess.mesures_j3_soir += 1
 
+    def _periode_depuis_creneau(self, creneau: Creneau) -> PeriodeMesure:
+        if creneau == Creneau.MATIN:
+            return PeriodeMesure.MATIN
+        if creneau == Creneau.SOIR:
+            return PeriodeMesure.SOIR
+        raise ApplicationException("Aucun créneau de mesure disponible.")
+
     def _verifier_completion_jour(
         self, sess: SessionModel, jour: int
     ) -> None:
@@ -272,7 +281,7 @@ class CreerMesureSessionUseCase:
             .where(MesureModel.patient_id == patient_id)
             .where(MesureModel.session_id == session_id)
             .where(MesureModel.jour == jour)
-            .where(MesureModel.periode == creneau.value)
+            .where(MesureModel.periode == self._periode_depuis_creneau(creneau))
         )
         mesures = result.scalars().all()
         if not mesures:

@@ -80,12 +80,14 @@ async def verifier_creneau(
     from app.domain.services.creneau_service import CreneauService
     from datetime import datetime, timezone
 
-    creneau = CreneauService.creneau_actuel()
+    organisation_id = current_user.organisation_id or 1
+    creneau_service = await CreneauService.pour_organisation(organisation_id)
+    creneau = creneau_service.creneau_actuel()
     return {
         "creneau":          creneau.value,
-        "est_disponible":   CreneauService.est_disponible(),
+        "est_disponible":   creneau_service.est_disponible(),
         "heure_utc":        datetime.now(timezone.utc).strftime("%H:%M UTC"),
-        "message":          CreneauService.prochain_creneau()
-                            if not CreneauService.est_disponible()
+        "message":          creneau_service.prochain_creneau()
+                            if not creneau_service.est_disponible()
                             else None,
     }

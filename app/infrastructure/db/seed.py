@@ -164,22 +164,22 @@ USERS = [
 # Valeurs par défaut pour chaque organisation
 CONFIGS_DEFAUT = {
     # Créneaux horaires
-    "creneau_matin_debut":    {"valeur": "0",    "description": "Début créneau matin (heure UTC)"},
-    "creneau_matin_fin":      {"valeur": "9",    "description": "Fin créneau matin (heure UTC)"},
-    "creneau_soir_debut":     {"valeur": "18",   "description": "Début créneau soir (heure UTC)"},
+    "creneau_matin_debut":    {"valeur": "16",    "description": "Début créneau matin (heure UTC)"},
+    "creneau_matin_fin":      {"valeur": "16:20",    "description": "Fin créneau matin (heure UTC)"},
+    "creneau_soir_debut":     {"valeur": "16:30",   "description": "Début créneau soir (heure UTC)"},
     "creneau_soir_fin":       {"valeur": "22",   "description": "Fin créneau soir (heure UTC)"},
 
     # Test / Debug
-    "debug_heure_simulee":    {"valeur": "",     "description": "Heure simulée pour tests (vide = heure réelle)"},
+    "debug_heure_simulee":    {"valeur": "16",     "description": "Heure simulée pour tests (vide = heure réelle)"},
     "app_env":                {"valeur": "prod", "description": "Environnement (prod / test)"},
 
     # Seuils BP
-    # "seuil_sys_eleve":        {"valeur": "130",  "description": "Seuil systolique élevé (mmHg)"},
-    # "seuil_dia_eleve":        {"valeur": "85",   "description": "Seuil diastolique élevé (mmHg)"},
-    # "seuil_sys_hypertension": {"valeur": "140",  "description": "Seuil systolique hypertension (mmHg)"},
-    # "seuil_dia_hypertension": {"valeur": "90",   "description": "Seuil diastolique hypertension (mmHg)"},
-    # "seuil_sys_critique":     {"valeur": "180",  "description": "Seuil systolique critique (mmHg)"},
-    # "seuil_dia_critique":     {"valeur": "110",  "description": "Seuil diastolique critique (mmHg)"},
+    "seuil_sys_eleve":        {"valeur": "130",  "description": "Seuil systolique élevé (mmHg)"},
+    "seuil_dia_eleve":        {"valeur": "85",   "description": "Seuil diastolique élevé (mmHg)"},
+    "seuil_sys_hypertension": {"valeur": "140",  "description": "Seuil systolique hypertension (mmHg)"},
+    "seuil_dia_hypertension": {"valeur": "90",   "description": "Seuil diastolique hypertension (mmHg)"},
+    "seuil_sys_critique":     {"valeur": "180",  "description": "Seuil systolique critique (mmHg)"},
+    "seuil_dia_critique":     {"valeur": "110",  "description": "Seuil diastolique critique (mmHg)"},
 
     # QR Code
     "qrcode_expiration_jours": {"valeur": "30",  "description": "Durée d'expiration des QR codes (jours)"},
@@ -297,32 +297,32 @@ async def seed_users(
     return users_map
 
 
-# async def seed_patients(
-#     session: AsyncSession,
-#     users_map: dict[str, UserModel],
-# ) -> None:
-#     """Crée les profils patients."""
-#     print("\n⏳ Création des profils patients...")
+async def seed_patients(
+    session: AsyncSession,
+    users_map: dict[str, UserModel],
+) -> None:
+    """Crée les profils patients."""
+    print("\n⏳ Création des profils patients...")
 
-#     for data in PATIENTS:
-#         email = data.pop("email")
-#         user = users_map.get(email)
+    for data in PATIENTS:
+        email = data.pop("email")
+        user = users_map.get(email)
 
-#         if not user:
-#             print(f"   ⚠️  Utilisateur introuvable : {email}")
-#             continue
+        if not user:
+            print(f"   ⚠️  Utilisateur introuvable : {email}")
+            continue
 
-#         result = await session.execute(
-#             select(PatientModel).where(PatientModel.user_id == user.id)
-#         )
-#         patient = result.scalar_one_or_none()
+        result = await session.execute(
+            select(PatientModel).where(PatientModel.user_id == user.id)
+        )
+        patient = result.scalar_one_or_none()
 
-#         if not patient:
-#             patient = PatientModel(user_id=user.id, **data)
-#             session.add(patient)
-#             print(f"   ✅ Profil patient créé pour : {email}")
-#         else:
-#             print(f"   ⏭️  Profil patient existant pour : {email}")
+        if not patient:
+            patient = PatientModel(user_id=user.id, **data)
+            session.add(patient)
+            print(f"   ✅ Profil patient créé pour : {email}")
+        else:
+            print(f"   ⏭️  Profil patient existant pour : {email}")
 
 
 async def run_seed() -> None:

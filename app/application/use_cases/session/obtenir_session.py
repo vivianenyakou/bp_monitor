@@ -51,10 +51,10 @@ class ObtenirSessionUseCase:
             # 4. Calculer le créneau actuel
             patient_org_id  = patient.organisation_id or 1
             creneau_service = await CreneauService.pour_organisation(patient_org_id)
-            creneau         = CreneauService.creneau_actuel()
+            creneau         = creneau_service.creneau_actuel()
             message_creneau = ""
             if creneau == Creneau.HORS_CRENEAU:
-                message_creneau = CreneauService.prochain_creneau()
+                message_creneau = creneau_service.prochain_creneau()
 
             if not sess:
                 return SessionDTO(
@@ -73,7 +73,7 @@ class ObtenirSessionUseCase:
                     jour2_complete=    False,
                     jour3_complete=    False,
                     protocole_termine= False,
-                    creneau_actuel=    creneau,
+                    creneau_actuel=    creneau.value,
                     message_creneau=   message_creneau,
                     jour_actuel=       1,
                     mesures_restantes= 3,
@@ -106,7 +106,7 @@ class ObtenirSessionUseCase:
                 jour2_complete=    sess.jour2_complete,
                 jour3_complete=    sess.jour3_complete,
                 protocole_termine= sess.protocole_termine,
-                creneau_actuel=    creneau,
+                creneau_actuel=    creneau.value,
                 message_creneau=   message_creneau,
                 jour_actuel=       jour_actuel,
                 mesures_restantes= mesures_restantes,

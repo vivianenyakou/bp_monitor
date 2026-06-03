@@ -145,10 +145,10 @@ class MesureNotifier extends StateNotifier<MesureState> {
         jour2Complete: (data['jour2_complete'] as bool?) ?? false,
         jour3Complete: (data['jour3_complete'] as bool?) ?? false,
       );
-    } catch (_) {
+    } catch (e) {
       state = state.copyWith(
         sessionLoading: false,
-        error: 'Impossible de charger la session.',
+        error: 'Impossible de charger la session. ${_extraireErreur(e)}',
       );
     }
   }
