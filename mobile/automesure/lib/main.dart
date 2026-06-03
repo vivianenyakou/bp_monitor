@@ -3,7 +3,9 @@ import 'package:automesure/features/admin/screens/admin_utilisateurs_screen.dart
 import 'package:automesure/features/alerte/screens/alertes_screen.dart';
 import 'package:automesure/features/home/screens/home_screen.dart';
 import 'package:automesure/features/mesure/screens/saisie_mesure_screen.dart';
+import 'package:automesure/features/qrcode/screens/scanner_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'core/constants/app_colors.dart';
@@ -33,10 +35,6 @@ final _router = GoRouter(
     GoRoute(
       path: '/login',
       builder: (_, __) => const LoginScreen(),
-    ),
-    GoRoute(
-      path: '/register',
-      builder: (_, __) => const RegisterScreen(),
     ),
     GoRoute(
       path: '/home',
@@ -82,13 +80,20 @@ final _router = GoRouter(
       path: '/admin/utilisateurs',
       builder: (_, __) => const AdminUtilisateursScreen(),
     ),
-    // GoRoute(
-    //   path: '/admin/roles',
-    //   builder: (_, __) => const AdminRolesScreen(),
-    // ),
     GoRoute(
       path: '/admin',
       builder: (_, __) => const AdminScreen(),
+    ),
+    GoRoute(
+      path:    '/scanner',
+      builder: (_, __) => const ScannerScreen(),
+    ),
+    GoRoute(
+      path: '/register',
+      builder: (context, state) {
+        final qrToken = state.uri.queryParameters['qr_token'];
+        return RegisterScreen(qrToken: qrToken);
+      },
     ),
   ],
 );
@@ -101,6 +106,16 @@ class BPMonitorApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'AutoMesure de la Pression Artérielle',
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('fr'),
+        Locale('en'),
+      ],
+      locale: const Locale('fr'),
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
         useMaterial3: true,

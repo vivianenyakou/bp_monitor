@@ -5,6 +5,7 @@ from app.application.services.phone_number_formatter import normaliser_telephone
 from app.core.exceptions import ConflictError
 from app.infrastructure.db.session import AsyncSessionFactory
 from app.infrastructure.models.multi_tenant.organisations import OrganisationModel
+from app.infrastructure.services.config_service import ConfigService
 
 
 class CreerOrganisationUseCase:
@@ -35,7 +36,8 @@ class CreerOrganisationUseCase:
             session.add(organisation)
             await session.commit()
             await session.refresh(organisation)
-
+            await ConfigService.initialiser_organisation(organisation.id)
+            
             return OrganisationDTO(
                 id=organisation.id,
                 nom=organisation.nom,

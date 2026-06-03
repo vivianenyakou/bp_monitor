@@ -18,3 +18,5 @@ build/
 # VSCode
 .vscode/
 *.code-workspace
+
+web/

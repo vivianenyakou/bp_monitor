@@ -39,7 +39,9 @@ async def register(body: RegisterSchema):
             first_name=body.first_name,
             last_name=body.last_name,
             phone_number=body.phone_number,
+            birth_date=body.birth_date,
             organisation_code=body.organisation_code,
+            qrcode_token=body.qr_code_token,
         )
         return await use_case.executer(dto)
     except BPMonitorException as e:

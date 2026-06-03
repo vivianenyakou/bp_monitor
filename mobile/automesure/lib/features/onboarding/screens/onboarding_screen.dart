@@ -17,8 +17,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<OnboardingData> _pages = [
     const OnboardingData(
-      emoji: '🩺',
-      title: 'Bienvenue sur Auto-mesure Santé',
+      emoji: '🩺❤️',
+      title: 'Bienvenue sur G-AutoBP Santé',
       description:
           'Votre assistant de suivi de tension artérielle.\n'
           'Apprenez à mesurer votre tension correctement.',
@@ -167,17 +167,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
 
-            // Powered by
-            const Padding(
-              padding: EdgeInsets.only(bottom: 8),
-              child: Text(
-                'Powered by G-Medic',
-                style: TextStyle(
-                  fontSize: 11, color: Color(0xFFAAAAAA), letterSpacing: 0.5,
-                ),
-              ),
-            ),
-
             // Bouton
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
@@ -205,6 +194,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
               ),
             ),
+            const Padding(
+            padding: EdgeInsets.only(bottom: 8),
+            child: Text(
+              'Powered by G-Medic',
+              style: TextStyle(
+                fontSize: 11, color: Color(0xFFAAAAAA), letterSpacing: 0.5,
+              ),
+            ),
+          ),
           ],
         ),
       ),

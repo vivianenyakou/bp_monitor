@@ -63,19 +63,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 40),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: () => context.go('/onboarding'),
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: AppColors.textSecondary,
+                    ),
+                    label: Text(
+                      'Retour',
+                      style: AppTextStyles.body.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
 
                 // Logo
                 Center(
                   child: Container(
-                    width: 80,
-                    height: 80,
+                    width: 120,
+                    height: 120,
                     decoration: const BoxDecoration(
                       color: AppColors.primarySurface,
                       shape: BoxShape.circle,
                     ),
                     child: const Center(
-                      child: Text('🩺', style: TextStyle(fontSize: 40)),
+                      child: Text('🩺❤️', style: TextStyle(fontSize: 40)),
                     ),
                   ),
                 ),
@@ -129,19 +145,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const SizedBox(height: 12),
 
                 // Mot de passe oublié
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {},
-                    child: Text(
-                      'Mot de passe oublié ?',
-                      style: AppTextStyles.body.copyWith(
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
+                // Align(
+                //   alignment: Alignment.centerRight,
+                //   child: TextButton(
+                //     onPressed: () {},
+                //     child: Text(
+                //       'Mot de passe oublié ?',
+                //       style: AppTextStyles.body.copyWith(
+                //         color: AppColors.primary,
+                //       ),
+                //     ),
+                //   ),
+                // ),
+                //const SizedBox(height: 8),
 
                 // Erreur
                 if (state.error != null)
@@ -193,8 +209,47 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                   ),
                 ),
-                const SizedBox(height: 24),
 
+                const SizedBox(height: 16),
+
+                // Divider
+                Row(
+                  children: [
+                    const Expanded(child: Divider()),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Text('ou', style: AppTextStyles.bodySecondary),
+                    ),
+                    const Expanded(child: Divider()),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Bouton Scanner QR
+                SizedBox(
+                  width:  double.infinity,
+                  height: 52,
+                  child: OutlinedButton.icon(
+                    onPressed: () => context.go('/scanner'),
+                    icon: const Icon(
+                      Icons.qr_code_scanner,
+                      color: AppColors.primary,
+                    ),
+                    label: Text(
+                      'Scanner le QR code du centre de santé',
+                      style: AppTextStyles.body.copyWith(
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.primary),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 // Lien register
                 Center(
                   child: Row(

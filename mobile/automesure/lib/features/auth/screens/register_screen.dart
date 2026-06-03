@@ -18,7 +18,9 @@ class _Organisation {
 }
 
 class RegisterScreen extends ConsumerStatefulWidget {
-  const RegisterScreen({super.key});
+  final String? qrToken;
+
+  const RegisterScreen({super.key, this.qrToken});
 
   @override
   ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
@@ -33,15 +35,23 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _lastCtrl     = TextEditingController();
   final _phoneCtrl    = TextEditingController();
   bool _obscure       = true;
+  DateTime? _dateNaissance;
 
   List<_Organisation> _organisations = [];
   _Organisation?      _orgSelectionnee;
   bool                _loadingOrgs = true;
+  String? _organisationNom;
+  String? _medecinNom;
+  bool    _qrValide = false;
 
   @override
   void initState() {
     super.initState();
     _chargerOrganisations();
+
+    if (widget.qrToken != null) {
+      _chargerInfoQR(widget.qrToken!);
+    }
   }
 
   Future<void> _chargerOrganisations() async {
@@ -58,7 +68,27 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       setState(() => _loadingOrgs = false);
     }
   }
+  Future<void> _chargerInfoQR(String token) async {
+      try {
+        final api      = ref.read(apiClientProvider);
+        final response = await api.get(ApiEndpoints.validerQRCode(token));
+        final data     = response.data;
 
+        if (data['est_valide'] == true) {
+          setState(() {
+            _organisationNom = data['organisation_nom'];
+            _medecinNom      = data['medecin_nom'];
+            _qrValide        = true;
+
+            // Désélectionner l'organisation manuelle
+            // car le QR gère tout automatiquement
+            _orgSelectionnee = null;
+          });
+        }
+      } catch (e) {
+        print('[QR] Erreur validation : $e');
+      }
+    }
   @override
   void dispose() {
     _usernameCtrl.dispose();
@@ -70,6 +100,31 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     super.dispose();
   }
 
+  Future<void> _choisirDateNaissance() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _dateNaissance ?? DateTime(now.year - 30),
+      firstDate: DateTime(1900),
+      lastDate: DateTime(now.year - 1),
+      helpText: 'Date de naissance',
+      locale: const Locale('fr'),
+    );
+    if (picked != null) setState(() => _dateNaissance = picked);
+  }
+
+  int? get _ageCalcule {
+    if (_dateNaissance == null) return null;
+    final today = DateTime.now();
+    int age = today.year - _dateNaissance!.year;
+    if (today.month < _dateNaissance!.month ||
+        (today.month == _dateNaissance!.month &&
+            today.day < _dateNaissance!.day)) {
+      age--;
+    }
+    return age;
+  }
+
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
     final ok = await ref.read(authProvider.notifier).register(
@@ -79,7 +134,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       firstName:        _firstCtrl.text.trim(),
       lastName:         _lastCtrl.text.trim(),
       phoneNumber:      _phoneCtrl.text.trim(),
+      birthDate:        _dateNaissance,
       organisationCode: _orgSelectionnee?.code,
+      qrToken:          widget.qrToken,
     );
     if (ok && mounted) {
       final user  = ref.read(authProvider).user;
@@ -118,7 +175,70 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 Text('Créer un compte', style: AppTextStyles.heading1),
                 const SizedBox(height: 8),
                 Text('Rejoignez Auto-Mésure santé', style: AppTextStyles.bodySecondary),
-                const SizedBox(height: 32),
+                const SizedBox(height: 16),
+                // ── Bannière QR code ─────────────────────────────────
+                if (widget.qrToken != null)
+                  Container(
+                    margin:  const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color:        _qrValide
+                          ? AppColors.primarySurface
+                          : AppColors.eleveeLight,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: _qrValide
+                            ? AppColors.primary
+                            : AppColors.elevee,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Text(
+                          _qrValide ? '✅' : '⏳',
+                          style: const TextStyle(fontSize: 24),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _qrValide
+                                    ? 'QR code validé !'
+                                    : 'Validation en cours...',
+                                style: AppTextStyles.body.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: _qrValide
+                                      ? AppColors.primary
+                                      : AppColors.elevee,
+                                ),
+                              ),
+                              if (_qrValide && _organisationNom != null)
+                                Text(
+                                  '🏥 $_organisationNom',
+                                  style: AppTextStyles.caption,
+                                ),
+                              if (_qrValide && _medecinNom != null)
+                                Text(
+                                  '👨‍⚕️ $_medecinNom',
+                                  style: AppTextStyles.caption,
+                                ),
+                              if (_qrValide)
+                                Text(
+                                  'Organisation et médecin assignés automatiquement',
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                const SizedBox(height: 16),
 
                 // Prénom + Nom
                 Row(
@@ -160,6 +280,70 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
                 const SizedBox(height: 16),
 
+                // Date de naissance
+                _buildLabel('Date de naissance (optionnel)'),
+                const SizedBox(height: 8),
+                GestureDetector(
+                  onTap: _choisirDateNaissance,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 16),
+                    decoration: BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(12),
+                      border: _dateNaissance != null
+                          ? Border.all(
+                              color: AppColors.primary, width: 2)
+                          : null,
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.cake_outlined,
+                            color: AppColors.textSecondary),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _dateNaissance == null
+                              ? Text('Sélectionner la date',
+                                  style: AppTextStyles.bodySecondary)
+                              : Text(
+                                  '${_dateNaissance!.day.toString().padLeft(2, '0')}/'
+                                  '${_dateNaissance!.month.toString().padLeft(2, '0')}/'
+                                  '${_dateNaissance!.year}',
+                                  style: AppTextStyles.body,
+                                ),
+                        ),
+                        if (_ageCalcule != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.primarySurface,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              '$_ageCalcule ans',
+                              style: AppTextStyles.caption.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        if (_dateNaissance != null)
+                          IconButton(
+                            icon: const Icon(Icons.clear,
+                                size: 18,
+                                color: AppColors.textSecondary),
+                            onPressed: () =>
+                                setState(() => _dateNaissance = null),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
                 // Mot de passe
                 _buildLabel('Mot de passe'),
                 const SizedBox(height: 8),
@@ -184,58 +368,63 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // ── Dropdown organisation ────────────────────────────────
-                _buildLabel('Structure médicale (optionnel)'),
-                const SizedBox(height: 8),
-                _loadingOrgs
-                    ? const SizedBox(
-                        height: 52,
-                        child: Center(
-                          child: CircularProgressIndicator(color: AppColors.primary),
-                        ),
-                      )
-                    : Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        decoration: BoxDecoration(
-                          color:        AppColors.background,
-                          borderRadius: BorderRadius.circular(12),
-                          border: _orgSelectionnee != null
-                              ? Border.all(color: AppColors.primary, width: 2)
-                              : null,
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<_Organisation>(
-                            value:      _orgSelectionnee,
-                            isExpanded: true,
-                            hint: Text(
-                              _organisations.isEmpty
-                                  ? 'Aucune organisation disponible'
-                                  : 'Sélectionner votre clinique / hôpital',
-                              style: AppTextStyles.bodySecondary,
-                            ),
-                            icon: const Icon(Icons.keyboard_arrow_down,
+                // ── Dropdown organisation (caché si QR validé) ──────────
+                if (!_qrValide) ...[
+                  _buildLabel('Structure médicale (optionnel)'),
+                  const SizedBox(height: 8),
+                  _loadingOrgs
+                      ? const SizedBox(
+                          height: 52,
+                          child: Center(
+                            child: CircularProgressIndicator(
                                 color: AppColors.primary),
-                            items: [
-                              const DropdownMenuItem<_Organisation>(
-                                value: null,
-                                child: Text('Aucune'),
+                          ),
+                        )
+                      : Container(
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 16),
+                          decoration: BoxDecoration(
+                            color: AppColors.background,
+                            borderRadius: BorderRadius.circular(12),
+                            border: _orgSelectionnee != null
+                                ? Border.all(
+                                    color: AppColors.primary, width: 2)
+                                : null,
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<_Organisation>(
+                              value: _orgSelectionnee,
+                              isExpanded: true,
+                              hint: Text(
+                                _organisations.isEmpty
+                                    ? 'Aucune organisation disponible'
+                                    : 'Sélectionner votre clinique / hôpital',
+                                style: AppTextStyles.bodySecondary,
                               ),
-                              ..._organisations.map((o) => DropdownMenuItem(
-                                    value: o,
-                                    child: Text(o.nom),
-                                  )),
-                            ],
-                            onChanged: (val) =>
-                                setState(() => _orgSelectionnee = val),
+                              icon: const Icon(Icons.keyboard_arrow_down,
+                                  color: AppColors.primary),
+                              items: [
+                                const DropdownMenuItem<_Organisation>(
+                                  value: null,
+                                  child: Text('Aucune'),
+                                ),
+                                ..._organisations.map((o) => DropdownMenuItem(
+                                      value: o,
+                                      child: Text(o.nom),
+                                    )),
+                              ],
+                              onChanged: (val) =>
+                                  setState(() => _orgSelectionnee = val),
+                            ),
                           ),
                         ),
-                      ),
-                const SizedBox(height: 4),
-                Text(
-                  'Sélectionnez votre clinique ou hôpital si applicable.',
-                  style: AppTextStyles.caption,
-                ),
-                const SizedBox(height: 24),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Sélectionnez votre clinique ou hôpital si applicable.',
+                    style: AppTextStyles.caption,
+                  ),
+                  const SizedBox(height: 24),
+                ],
 
                 // Erreur
                 if (state.error != null)
