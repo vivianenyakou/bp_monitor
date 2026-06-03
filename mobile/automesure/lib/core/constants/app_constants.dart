@@ -1,7 +1,7 @@
 class AppConstants {
   // API
-  static const baseUrl = 'http://10.250.90.28:8000/api/v1';
-  //static const baseUrl = 'https://api.g-autobp.tech/api/v1';
+  //static const baseUrl = 'http://10.250.90.28:8000/api/v1';
+  static const baseUrl = 'https://api.g-autobp.tech/api/v1';
 
   // Telephone
   static const phoneCountryCode       = '+228';
