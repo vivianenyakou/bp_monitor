@@ -49,6 +49,8 @@ class ObtenirSessionUseCase:
                     sess = None
 
             # 4. Calculer le créneau actuel
+            patient_org_id  = patient.organisation_id or 1
+            creneau_service = await CreneauService.pour_organisation(patient_org_id)
             creneau         = CreneauService.creneau_actuel()
             message_creneau = ""
             if creneau == Creneau.HORS_CRENEAU:

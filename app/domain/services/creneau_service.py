@@ -3,55 +3,88 @@ from enum import StrEnum
 
 
 class Creneau(StrEnum):
-    MATIN       = "matin"
-    SOIR        = "soir"
+    MATIN        = "matin"
+    SOIR         = "soir"
     HORS_CRENEAU = "hors_creneau"
 
 
 class CreneauService:
     """
     Gère les créneaux horaires UTC.
-    Matin : 00h00 - 09h00 UTC
-    Soir  : 18h00 - 22h00 UTC
+    Les heures sont configurables par organisation.
     """
 
-    MATIN_DEBUT = 0   # 00h00 UTC
-    MATIN_FIN   = 9   # 09h00 UTC
-    SOIR_DEBUT  = 18  # 18h00 UTC
-    SOIR_FIN    = 22  # 22h00 UTC
+    def __init__(
+        self,
+        matin_debut:   int = 0,
+        matin_fin:     int = 9,
+        soir_debut:    int = 18,
+        soir_fin:      int = 22,
+        heure_simulee: int | None = None,
+    ) -> None:
+        self.matin_debut   = matin_debut
+        self.matin_fin     = matin_fin
+        self.soir_debut    = soir_debut
+        self.soir_fin      = soir_fin
+        self.heure_simulee = heure_simulee
 
-    @staticmethod
-    def creneau_actuel() -> Creneau:
-        """Retourne le créneau actuel en UTC."""
-        heure = datetime.now(timezone.utc).hour
+    @classmethod
+    async def pour_organisation(cls, organisation_id: int) -> "CreneauService":
+        """Crée un CreneauService avec les configs de l'organisation."""
+        from app.infrastructure.services.config_service import ConfigService
 
-        if CreneauService.MATIN_DEBUT <= heure < CreneauService.MATIN_FIN:
+        matin_debut   = await ConfigService.get_int(organisation_id, "creneau_matin_debut",   0)
+        matin_fin     = await ConfigService.get_int(organisation_id, "creneau_matin_fin",      9)
+        soir_debut    = await ConfigService.get_int(organisation_id, "creneau_soir_debut",    18)
+        soir_fin      = await ConfigService.get_int(organisation_id, "creneau_soir_fin",      22)
+
+        # Heure simulée pour les tests
+        heure_simulee_str = await ConfigService.get(
+            organisation_id, "debug_heure_simulee", ""
+        )
+        heure_simulee = int(heure_simulee_str) if heure_simulee_str else None
+
+        return cls(
+            matin_debut=   matin_debut,
+            matin_fin=     matin_fin,
+            soir_debut=    soir_debut,
+            soir_fin=      soir_fin,
+            heure_simulee= heure_simulee,
+        )
+
+    def _heure_actuelle(self) -> int:
+        """Retourne l'heure actuelle ou simulée."""
+        if self.heure_simulee is not None:
+            return self.heure_simulee
+        return datetime.now(timezone.utc).hour
+
+    def creneau_actuel(self) -> Creneau:
+        """Retourne le créneau actuel."""
+        heure = self._heure_actuelle()
+
+        if self.matin_debut <= heure < self.matin_fin:
             return Creneau.MATIN
-        if CreneauService.SOIR_DEBUT <= heure < CreneauService.SOIR_FIN:
+        if self.soir_debut <= heure < self.soir_fin:
             return Creneau.SOIR
         return Creneau.HORS_CRENEAU
 
-    @staticmethod
-    def prochain_creneau() -> str:
+    def prochain_creneau(self) -> str:
         """Retourne un message sur le prochain créneau."""
-        heure = datetime.now(timezone.utc).hour
+        heure = self._heure_actuelle()
 
-        if heure < CreneauService.MATIN_DEBUT:
-            return "La prochaine prise est prévue à partir de00h00 GMT."
-        if CreneauService.MATIN_FIN <= heure < CreneauService.SOIR_DEBUT:
-            return "La prochaine prise est prévue à partir de 18h00 GMT."
-        if heure >= CreneauService.SOIR_FIN:
-            return "La prochaine prise est prévue demain à 00h00 GMT."
+        if heure < self.matin_debut:
+            return f"La prochaine prise est prévue à {self.matin_debut:02d}h00 UTC."
+        if self.matin_fin <= heure < self.soir_debut:
+            return f"La prochaine prise est prévue à {self.soir_debut:02d}h00 UTC."
+        if heure >= self.soir_fin:
+            return f"La prochaine prise est prévue demain à {self.matin_debut:02d}h00 UTC."
         return ""
 
-    @staticmethod
-    def est_matin() -> bool:
-        return CreneauService.creneau_actuel() == Creneau.MATIN
+    def est_disponible(self) -> bool:
+        return self.creneau_actuel() != Creneau.HORS_CRENEAU
 
-    @staticmethod
-    def est_soir() -> bool:
-        return CreneauService.creneau_actuel() == Creneau.SOIR
+    def est_matin(self) -> bool:
+        return self.creneau_actuel() == Creneau.MATIN
 
-    @staticmethod
-    def est_disponible() -> bool:
-        return CreneauService.creneau_actuel() != Creneau.HORS_CRENEAU
+    def est_soir(self) -> bool:
+        return self.creneau_actuel() == Creneau.SOIR

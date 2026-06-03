@@ -6,6 +6,7 @@ from app.application.use_cases.session.creer_mesure_session import (
 )
 from app.application.use_cases.session.obtenir_session import ObtenirSessionUseCase
 from app.core.exceptions import BPMonitorException
+from app.domain.enums.role_enum import RoleUtilisateur
 from app.infrastructure.models.auth.user import UserModel
 from app.interfaces.dependencies.authorization import get_current_user, require_any_role
 from app.interfaces.schemas.session import (
@@ -24,7 +25,7 @@ router = APIRouter(prefix="/sessions", tags=["Sessions BP"])
 async def obtenir_session(
     patient_id: int,
     current_user: UserModel = Depends(
-        require_any_role("patient", "medecin", "admin")
+        require_any_role(RoleUtilisateur.PATIENT, RoleUtilisateur.MEDECIN, RoleUtilisateur.ADMIN)
     ),
 ):
     """
@@ -46,7 +47,7 @@ async def obtenir_session(
 async def creer_mesure_session(
     body: CreerMesureSessionSchema,
     current_user: UserModel = Depends(
-        require_any_role("patient", "medecin", "admin")
+        require_any_role(RoleUtilisateur.PATIENT, RoleUtilisateur.MEDECIN, RoleUtilisateur.ADMIN)
     ),
 ):
     """

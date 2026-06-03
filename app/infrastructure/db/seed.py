@@ -161,7 +161,29 @@ USERS = [
 #     },
 # ]
 
+# Valeurs par défaut pour chaque organisation
+CONFIGS_DEFAUT = {
+    # Créneaux horaires
+    "creneau_matin_debut":    {"valeur": "0",    "description": "Début créneau matin (heure UTC)"},
+    "creneau_matin_fin":      {"valeur": "9",    "description": "Fin créneau matin (heure UTC)"},
+    "creneau_soir_debut":     {"valeur": "18",   "description": "Début créneau soir (heure UTC)"},
+    "creneau_soir_fin":       {"valeur": "22",   "description": "Fin créneau soir (heure UTC)"},
 
+    # Test / Debug
+    "debug_heure_simulee":    {"valeur": "",     "description": "Heure simulée pour tests (vide = heure réelle)"},
+    "app_env":                {"valeur": "prod", "description": "Environnement (prod / test)"},
+
+    # Seuils BP
+    # "seuil_sys_eleve":        {"valeur": "130",  "description": "Seuil systolique élevé (mmHg)"},
+    # "seuil_dia_eleve":        {"valeur": "85",   "description": "Seuil diastolique élevé (mmHg)"},
+    # "seuil_sys_hypertension": {"valeur": "140",  "description": "Seuil systolique hypertension (mmHg)"},
+    # "seuil_dia_hypertension": {"valeur": "90",   "description": "Seuil diastolique hypertension (mmHg)"},
+    # "seuil_sys_critique":     {"valeur": "180",  "description": "Seuil systolique critique (mmHg)"},
+    # "seuil_dia_critique":     {"valeur": "110",  "description": "Seuil diastolique critique (mmHg)"},
+
+    # QR Code
+    "qrcode_expiration_jours": {"valeur": "30",  "description": "Durée d'expiration des QR codes (jours)"},
+}
 
 # ── Fonctions ─────────────────────────────────────────────────────
 async def seed_tenants(session: AsyncSession) -> dict[str, OrganisationModel]:

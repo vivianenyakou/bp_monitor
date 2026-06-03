@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_endpoints.dart';
@@ -205,6 +206,11 @@ class MesureNotifier extends StateNotifier<MesureState> {
   }
 
   String _extraireErreur(Object e) {
+    final apiMessage = _messageApi(e);
+    if (apiMessage != null && apiMessage.isNotEmpty) {
+      return apiMessage;
+    }
+
     final msg = e.toString().toLowerCase();
     if (msg.contains('hors_creneau') || msg.contains('creneau')) {
       return 'Vous êtes hors créneau. Réessayez au prochain créneau.';
@@ -216,6 +222,25 @@ class MesureNotifier extends StateNotifier<MesureState> {
       return 'Vous avez déjà effectué 3 mesures pour ce créneau.';
     }
     return 'Erreur lors de l\'enregistrement. Vérifiez votre connexion.';
+  }
+
+  String? _messageApi(Object e) {
+    if (e is! DioException) return null;
+
+    final data = e.response?.data;
+    if (data is Map<String, dynamic>) {
+      final detail = data['detail'];
+      if (detail is String) return detail;
+      if (detail is List && detail.isNotEmpty) {
+        final first = detail.first;
+        if (first is Map<String, dynamic> && first['msg'] is String) {
+          return first['msg'] as String;
+        }
+      }
+    }
+    if (data is String && data.isNotEmpty) return data;
+
+    return null;
   }
 }
 

@@ -4,8 +4,8 @@ from fastapi.responses import JSONResponse
 
 from app.core.config import get_settings
 from app.core.exceptions import BPMonitorException
-from app.interfaces.routes import alertes, mesures, patients,auth, qrcodes,session
-from app.interfaces.routes import alertes, auth, mesures, patients, organisations
+from app.interfaces.routes import alertes, mesures, patients,auth, qrcodes,session, organisations,configs
+
 
 
 
@@ -28,6 +28,7 @@ app.include_router(patients.router, prefix=settings.api_prefix)
 app.include_router(organisations.router, prefix=settings.api_prefix)
 app.include_router(qrcodes.router, prefix=settings.api_prefix)
 app.include_router(session.router, prefix=settings.api_prefix)
+app.include_router(configs.router, prefix=settings.api_prefix)
 
 app.add_middleware(
     CORSMiddleware,

@@ -61,7 +61,9 @@ class CreerMesureSessionUseCase:
                 raise PatientNotFoundError()
 
             # 2. Vérifier le créneau
-            creneau = CreneauService.creneau_actuel()
+            patient_org_id = patient.organisation_id or 1
+            creneau_service = await CreneauService.pour_organisation(patient_org_id)
+            creneau = creneau_service.creneau_actuel()
             if creneau == Creneau.HORS_CRENEAU:
                 raise ApplicationException(
                     CreneauService.prochain_creneau()
