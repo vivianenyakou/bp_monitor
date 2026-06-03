@@ -19,15 +19,19 @@ class ObtenirSessionUseCase:
     async def executer(self, patient_id: int) -> SessionDTO:
         async with AsyncSessionFactory() as session:
 
-            # 1. Vérifier le patient
-            patient = await session.get(PatientModel, patient_id)
+            # 1. Vérifier le patient (patient_id = user.id côté mobile)
+            result_p = await session.execute(
+                select(PatientModel)
+                .where(PatientModel.user_id == patient_id)
+            )
+            patient = result_p.scalar_one_or_none()
             if not patient:
                 raise PatientNotFoundError()
 
-            # 2. Chercher une session active
+            # 2. Chercher une session active (patient.id = PK de patients)
             result = await session.execute(
                 select(SessionModel)
-                .where(SessionModel.patient_id == patient_id)
+                .where(SessionModel.patient_id == patient.id)
                 .where(SessionModel.protocole_termine == False)
                 .order_by(SessionModel.id.desc())
             )

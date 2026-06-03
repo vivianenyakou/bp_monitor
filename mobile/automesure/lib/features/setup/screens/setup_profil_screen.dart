@@ -39,7 +39,9 @@ class _SetupProfilScreenState extends ConsumerState<SetupProfilScreen> {
   Future<void> _valider() async {
     if (_estHypertendu == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez répondre à la question sur l\'hypertension.')),
+        const SnackBar(
+            content: Text(
+                'Veuillez répondre à la question sur l\'hypertension.')),
       );
       return;
     }
@@ -48,36 +50,35 @@ class _SetupProfilScreenState extends ConsumerState<SetupProfilScreen> {
     final user = ref.read(authProvider).user;
     if (user == null) return;
 
-    try {
-      // 1. Sauvegarder les seuils si hypertendu
-      if (_estHypertendu == true) {
+    // Les appels API sont best-effort : une erreur réseau ne bloque pas le setup.
+    if (_estHypertendu == true) {
+      try {
         await ref.read(profilProvider.notifier).mettreAJour(
-          patientId:                   user.id,
-          seuilSystoliqueEleve:        _htaSeuilSystoliqueEleve,
-          seuilDiastoliqueEleve:       _htaSeuilDiastoliqueEleve,
-          seuilSystoliqueHypertension: _htaSeuilSystoliqueHypertension,
-          seuilDiastoliqueHypertension:_htaSeuilDiastoliqueHypertension,
-          seuilSystoliqueCritique:     _htaSeuilSystoliqueCritique,
-          seuilDiastoliqueCritique:    _htaSeuilDiastoliqueCritique,
+          patientId:                    user.id,
+          seuilSystoliqueEleve:         _htaSeuilSystoliqueEleve,
+          seuilDiastoliqueEleve:        _htaSeuilDiastoliqueEleve,
+          seuilSystoliqueHypertension:  _htaSeuilSystoliqueHypertension,
+          seuilDiastoliqueHypertension: _htaSeuilDiastoliqueHypertension,
+          seuilSystoliqueCritique:      _htaSeuilSystoliqueCritique,
+          seuilDiastoliqueCritique:     _htaSeuilDiastoliqueCritique,
         );
-      }
+      } catch (_) {}
+    }
 
-      // 2. Assigner le médecin si sélectionné
-      if (_medecinSelectionne != null) {
+    if (_medecinSelectionne != null) {
+      try {
         await ref.read(profilProvider.notifier).choisirMedecin(
           patientId: user.id,
           medecinId: _medecinSelectionne!,
         );
-      }
-
-      // 3. Marquer le setup comme terminé
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('setup_done_${user.id}', true);
-
-      if (mounted) context.go('/home');
-    } catch (_) {
-      setState(() => _isSaving = false);
+      } catch (_) {}
     }
+
+    // Toujours marquer le setup comme terminé, même si les API ont échoué.
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('setup_done_${user.id}', true);
+
+    if (mounted) context.go('/home');
   }
 
   Future<void> _passer() async {

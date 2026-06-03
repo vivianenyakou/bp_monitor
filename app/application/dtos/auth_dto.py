@@ -9,6 +9,7 @@ class RegisterDTO:
     first_name: str | None = None
     last_name: str | None = None
     phone_number: str | None = None
+    birth_date: object | None = None  # datetime.date
     organisation_code: str | None = None
     qrcode_token: str | None = None
 

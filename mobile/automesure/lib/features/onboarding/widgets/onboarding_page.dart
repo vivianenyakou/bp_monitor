@@ -226,32 +226,25 @@ class OnboardingPage extends StatelessWidget {
     final categories = [
       {
         'label': 'Normale',
-        'range': '< 130 / 85 mmHg',
+        'range': '< 120 / 70 mmHg',
         'color': AppColors.normale,
         'bg': AppColors.normaleLight,
         'emoji': '💚',
       },
       {
         'label': 'Élevée',
-        'range': '130-139 / 85-89 mmHg',
+        'range': '120/70 - <135/85 mmHg',
         'color': AppColors.elevee,
         'bg': AppColors.eleveeLight,
         'emoji': '🟡',
       },
       {
         'label': 'Hypertension',
-        'range': '140-179 / 90-109 mmHg',
+        'range': '≥ 135/85 mmHg',
         'color': AppColors.hypertension,
         'bg': AppColors.hypertensionLight,
         'emoji': '🔴',
-      },
-      {
-        'label': 'Critique',
-        'range': '≥ 180 / ≥ 110 mmHg',
-        'color': AppColors.critique,
-        'bg': AppColors.critiqueLight,
-        'emoji': '🚨',
-      },
+      }
     ];
 
     return Column(

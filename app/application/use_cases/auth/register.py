@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -126,10 +126,10 @@ class RegisterUseCase:
                     )
 
             # Option B — via QR token (prioritaire)
-            if dto.qr_token:
+            if dto.qrcode_token:
                 qr_result = await session.execute(
                     select(QRCodeModel)
-                    .where(QRCodeModel.token == dto.qr_token)
+                    .where(QRCodeModel.token == dto.qrcode_token)
                     .where(QRCodeModel.est_actif == True)
                 )
                 qrcode = qr_result.scalar_one_or_none()
@@ -198,6 +198,7 @@ class RegisterUseCase:
                 user_id=         user.id,
                 organisation_id= organisation.id if organisation else None,
                 medecin_id=      medecin_id_depuis_qr,
+                birth_date=      dto.birth_date,
             )
             session.add(patient)
             await session.flush()

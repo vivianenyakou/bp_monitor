@@ -37,11 +37,11 @@ class CreneauService:
         heure = datetime.now(timezone.utc).hour
 
         if heure < CreneauService.MATIN_DEBUT:
-            return "La prochaine prise est prévue à 00h00 UTC."
+            return "La prochaine prise est prévue à partir de00h00 GMT."
         if CreneauService.MATIN_FIN <= heure < CreneauService.SOIR_DEBUT:
-            return "La prochaine prise est prévue à 18h00 UTC."
+            return "La prochaine prise est prévue à partir de 18h00 GMT."
         if heure >= CreneauService.SOIR_FIN:
-            return "La prochaine prise est prévue demain à 00h00 UTC."
+            return "La prochaine prise est prévue demain à 00h00 GMT."
         return ""
 
     @staticmethod

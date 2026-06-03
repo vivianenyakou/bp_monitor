@@ -10,6 +10,11 @@ class ApiEndpoints {
   static String resumeSession(int id, String sessionId) =>
       '/mesures/resume/$id/$sessionId';
 
+  // Sessions
+  static const sessionMesure   = '/sessions/mesure';
+  static String sessionPatient(int id) => '/sessions/patient/$id';
+  static const creneauActuel   = '/sessions/creneau';
+
   // Alertes
   static const alertes         = '/alertes/';
   static String acquitterAlerte(int id) => '/alertes/$id/acquitter';

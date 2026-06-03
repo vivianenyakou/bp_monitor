@@ -5,6 +5,7 @@ import 'package:automesure/features/home/screens/home_screen.dart';
 import 'package:automesure/features/mesure/screens/saisie_mesure_screen.dart';
 import 'package:automesure/features/qrcode/screens/scanner_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'core/constants/app_colors.dart';
@@ -105,6 +106,16 @@ class BPMonitorApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'AutoMesure de la Pression Artérielle',
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('fr'),
+        Locale('en'),
+      ],
+      locale: const Locale('fr'),
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
         useMaterial3: true,

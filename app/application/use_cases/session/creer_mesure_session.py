@@ -50,10 +50,10 @@ class CreerMesureSessionUseCase:
     async def executer(self, dto: CreerMesureAvecSessionDTO) -> dict:
         async with AsyncSessionFactory() as db:
 
-            # 1. Vérifier le patient
+            # 1. Vérifier le patient (dto.patient_id = user.id côté mobile)
             result = await db.execute(
                 select(PatientModel)
-                .where(PatientModel.id == dto.patient_id)
+                .where(PatientModel.user_id == dto.patient_id)
                 .options(selectinload(PatientModel.user))
             )
             patient = result.scalar_one_or_none()
@@ -67,8 +67,8 @@ class CreerMesureSessionUseCase:
                     CreneauService.prochain_creneau()
                 )
 
-            # 3. Obtenir ou créer la session
-            sess = await self._obtenir_ou_creer_session(db, dto.patient_id)
+            # 3. Obtenir ou créer la session (patient.id = PK de patients)
+            sess = await self._obtenir_ou_creer_session(db, patient.id)
 
             # 4. Déterminer le jour actuel
             aujourd_hui = date.today()
@@ -104,7 +104,7 @@ class CreerMesureSessionUseCase:
 
             # 8. Enregistrer la mesure
             mesure = MesureModel(
-                patient_id=    dto.patient_id,
+                patient_id=    patient.id,
                 systolique=    dto.systolique,
                 diastolique=   dto.diastolique,
                 pouls=         dto.pouls,
@@ -130,7 +130,7 @@ class CreerMesureSessionUseCase:
                 # Calculer la moyenne du créneau
                 await db.flush()
                 moyenne = await self._calculer_moyenne_creneau(
-                    db, dto.patient_id, sess.session_id, jour, creneau
+                    db, patient.id, sess.session_id, jour, creneau
                 )
 
                 # Vérifier si critique

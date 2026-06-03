@@ -63,6 +63,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: () => context.go('/onboarding'),
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: AppColors.textSecondary,
+                    ),
+                    label: Text(
+                      'Retour',
+                      style: AppTextStyles.body.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 40),
 
                 // Logo
@@ -75,7 +91,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       shape: BoxShape.circle,
                     ),
                     child: const Center(
-                      child: Text('🩺', style: TextStyle(fontSize: 40)),
+                      child: Text('🩺❤️', style: TextStyle(fontSize: 40)),
                     ),
                   ),
                 ),
@@ -129,19 +145,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const SizedBox(height: 12),
 
                 // Mot de passe oublié
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {},
-                    child: Text(
-                      'Mot de passe oublié ?',
-                      style: AppTextStyles.body.copyWith(
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
+                // Align(
+                //   alignment: Alignment.centerRight,
+                //   child: TextButton(
+                //     onPressed: () {},
+                //     child: Text(
+                //       'Mot de passe oublié ?',
+                //       style: AppTextStyles.body.copyWith(
+                //         color: AppColors.primary,
+                //       ),
+                //     ),
+                //   ),
+                // ),
+                //const SizedBox(height: 8),
 
                 // Erreur
                 if (state.error != null)
@@ -220,7 +236,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       color: AppColors.primary,
                     ),
                     label: Text(
-                      'Scanner le QR code de ma clinique',
+                      'Scanner le QR code du centre de santé',
                       style: AppTextStyles.body.copyWith(
                         color: AppColors.primary,
                       ),
@@ -233,6 +249,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 16),
                 // Lien register
                 Center(
                   child: Row(

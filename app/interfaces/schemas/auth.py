@@ -1,3 +1,5 @@
+from datetime import date
+
 from pydantic import BaseModel, EmailStr, Field
 
 from app.domain.enums.role_enum import RoleUtilisateur
@@ -10,6 +12,7 @@ class RegisterSchema(BaseModel):
     first_name: str | None = None
     last_name: str | None = None
     phone_number: str | None = None
+    birth_date: date | None = None
     organisation_code: str | None = None
     qr_code_token: str | None = None
 
