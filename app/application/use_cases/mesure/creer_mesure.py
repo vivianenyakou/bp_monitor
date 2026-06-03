@@ -62,10 +62,10 @@ class CreerMesureUseCase:
     async def executer(self, dto: CreerMesureDTO) -> MesureDTO:
         async with AsyncSessionFactory() as session:
 
-            # 1. Vérifier que le patient existe
+            # 1. Vérifier que le patient existe (dto.patient_id est le user_id)
             result = await session.execute(
                 select(PatientModel)
-                .where(PatientModel.id == dto.patient_id)
+                .where(PatientModel.user_id == dto.patient_id)
                 .options(selectinload(PatientModel.user))
             )
             patient = result.scalar_one_or_none()
@@ -86,7 +86,7 @@ class CreerMesureUseCase:
 
             # 4. Enregistrer la mesure
             mesure = MesureModel(
-                patient_id=dto.patient_id,
+                patient_id=patient.id,
                 systolique=dto.systolique,
                 diastolique=dto.diastolique,
                 pouls=dto.pouls,
@@ -142,7 +142,7 @@ class CreerMesureUseCase:
         message = self._analyseur.generer_message(tension)
         alerte = AlerteModel(
             patient_id=patient.id,
-            medecin_id=None,
+            medecin_id=patient.medecin_id,
             systolique=tension.systolique,
             diastolique=tension.diastolique,
             niveau=niveau,

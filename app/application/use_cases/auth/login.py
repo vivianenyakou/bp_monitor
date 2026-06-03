@@ -4,6 +4,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.orm import selectinload
 
 from app.application.dtos.auth_dto import LoginDTO, TokenDTO
+from app.application.services.phone_number_formatter import normaliser_telephone_togo
 from app.core.exceptions import InvalidCredentialsError
 from app.infrastructure.auth.jwt_service import JWTService
 from app.infrastructure.auth.password_service import PasswordService
@@ -20,22 +21,32 @@ class LoginUseCase:
             # 1. Normaliser l'identifiant
             identifiant = normaliser_identifiant(dto.identifiant)
             identifiant_sans_plus = identifiant.replace("+", "")
+            telephone_togo = normaliser_telephone_togo(identifiant)
+            telephone_togo_sans_plus = (
+                telephone_togo.replace("+", "") if telephone_togo else None
+            )
+            conditions = [
+                UserModel.email == identifiant,
+                UserModel.username == identifiant,
+                # Avec +
+                UserModel.phone_number == identifiant,
+                # Sans + des deux cotes
+                func.replace(UserModel.phone_number, "+", "")
+                == identifiant_sans_plus,
+            ]
+            if telephone_togo:
+                conditions.extend(
+                    [
+                        UserModel.phone_number == telephone_togo,
+                        func.replace(UserModel.phone_number, "+", "")
+                        == telephone_togo_sans_plus,
+                    ]
+                )
 
             # 2. Chercher l'utilisateur par email, phone ou username
             result = await session.execute(
                 select(UserModel)
-                .where(
-                    or_(
-                        UserModel.email    == identifiant,
-                        UserModel.username == identifiant,
-                        # Avec +
-                        UserModel.phone_number == identifiant,
-                        # Sans + des deux côtés
-                        func.replace(
-                            UserModel.phone_number, "+", ""
-                        ) == identifiant_sans_plus,
-                    )
-                )
+                .where(or_(*conditions))
                 .options(
                     selectinload(UserModel.roles)
                     .selectinload(RoleModel.permissions)

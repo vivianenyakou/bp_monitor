@@ -67,14 +67,14 @@ class NotificationService(INotificationService):
     ) -> None:
         """SMS envoyé au patient."""
         messages = {
-            "critique": (
-                f"🚨 ALERTE TENSION - BP Monitor\n"
+            "hypertension": (
+                f"🚨 ALERTE TENSION - G-AutoBP\n"
                 f"Votre tension est CRITIQUE : "
                 f"{alerte.systolique}/{alerte.diastolique} mmHg.\n"
-                f"Consultez un médecin immédiatement."
+                f"Consultez votre médecin immédiatement."
             ),
             "avertissement": (
-                f"⚠️ Tension élevée - BP Monitor\n"
+                f"⚠️ Tension élevée - G-AutoBP\n"
                 f"Votre tension est élevée : "
                 f"{alerte.systolique}/{alerte.diastolique} mmHg.\n"
                 f"Une surveillance médicale est recommandée."
@@ -91,8 +91,8 @@ class NotificationService(INotificationService):
     ) -> None:
         """SMS envoyé au médecin."""
         message = (
-            f"🚨 Alerte BP Monitor\n"
-            f"Patient ID : {alerte.patient_id}\n"
+            f"🚨 Alerte G-AutoBP\n"
+            f"Patient : {alerte.patient_nom_complet}\n"
             f"Tension : {alerte.systolique}/{alerte.diastolique} mmHg\n"
             f"Niveau : {alerte.niveau.upper()}\n"
             f"{alerte.message}"

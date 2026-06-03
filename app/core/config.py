@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     app_version: str = "1.0.0"
     app_mode: AppMode = AppMode.STANDALONE
     debug: bool = False
+    base_url: str = "http://localhost:8000"
 
     # API
     api_prefix: str = "/api/v1"

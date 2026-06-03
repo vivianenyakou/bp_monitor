@@ -19,5 +19,4 @@ build/
 .vscode/
 *.code-workspace
 
-# Alembic
-alembic/versions/*.py
+web/

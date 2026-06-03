@@ -3,13 +3,15 @@ from dataclasses import dataclass
 
 @dataclass
 class RegisterDTO:
-    username: str
-    email: str
     password: str
+    username: str | None = None
+    email: str | None = None
     first_name: str | None = None
     last_name: str | None = None
     phone_number: str | None = None
+    birth_date: object | None = None  # datetime.date
     organisation_code: str | None = None
+    qrcode_token: str | None = None
 
 
 @dataclass
@@ -23,13 +25,15 @@ class TokenDTO:
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
+    username: str | None = None
+    email: str | None = None
 
 
 @dataclass
 class UtilisateurDTO:
     id: int
-    username: str
-    email: str
+    username: str | None
+    email: str | None
     first_name: str | None
     last_name: str | None
     phone_number: str | None
@@ -40,9 +44,9 @@ class UtilisateurDTO:
 
 @dataclass
 class CreerUtilisateurDTO:
-    username: str
-    email: str
     password: str
+    username: str | None
+    email: str | None
     role: str                          # patient, medecin, admin
     first_name: str | None = None
     last_name: str | None = None

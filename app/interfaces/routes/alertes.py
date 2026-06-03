@@ -10,6 +10,9 @@ from app.infrastructure.models.auth.user import UserModel
 from app.infrastructure.notifications.notification_service import NotificationService
 from app.interfaces.dependencies.authorization import get_current_user, require_any_role
 from app.interfaces.schemas.alerte import AlerteSchema, AcquitterAlerteSchema
+from sqlalchemy import select
+from app.infrastructure.db.session import AsyncSessionFactory
+from app.infrastructure.models.bp.patient import PatientModel
 
 router = APIRouter(prefix="/alertes", tags=["Alertes"])
 
@@ -28,10 +31,6 @@ async def lister_alertes(
 
         # Patient — forcer le filtre sur son propre profil
         if RoleUtilisateur.PATIENT in current_user.role_names and RoleUtilisateur.ADMIN not in current_user.role_names:
-            from sqlalchemy import select
-            from app.infrastructure.db.session import AsyncSessionFactory
-            from app.infrastructure.models.bp.patient import PatientModel
-
             async with AsyncSessionFactory() as session:
                 result = await session.execute(
                     select(PatientModel).where(
@@ -88,7 +87,7 @@ async def acquitter_alerte(alerte_id: int, body: AcquitterAlerteSchema):
 @router.post("/{alerte_id}/declencher", response_model=AlerteSchema)
 async def declencher_alerte(
     alerte_id: int,
-    current_user: UserModel = Depends(require_any_role(RoleUtilisateur.MEDECIN, RoleUtilisateur.ADMIN)),
+    current_user: UserModel = Depends(require_any_role(RoleUtilisateur.MEDECIN, RoleUtilisateur.ADMIN, RoleUtilisateur.SUPER_ADMIN)),
 ):
     try:
         use_case = DeclencherAlerteUseCase(

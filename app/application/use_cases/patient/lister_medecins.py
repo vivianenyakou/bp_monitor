@@ -8,49 +8,53 @@ from app.infrastructure.db.session import AsyncSessionFactory
 from app.infrastructure.models.auth.role import RoleModel
 from app.infrastructure.models.auth.user import UserModel
 
-
-@dataclass
-class MedecinDTO:
-    id: int
-    nom_complet: str
-    email: str
-    telephone: str | None
-    specialite: str | None
-
-
 class ListerMedecinsUseCase:
+    """
+    Liste tous les médecins avec leurs informations complètes.
+    Filtre par organisation si fourni.
+    """
+
     async def executer(
-        self, organisation_id: int | None = None
-    ) -> list[MedecinDTO]:
+        self,
+        organisation_id: int | None = None,
+    ) -> list[dict]:
         async with AsyncSessionFactory() as session:
 
             query = (
                 select(UserModel)
                 .join(UserModel.roles)
-                .where(RoleModel.name == RoleUtilisateur.MEDECIN)
+                .where(RoleModel.name == "medecin")
                 .where(UserModel.is_active == True)
                 .options(
                     selectinload(UserModel.roles)
                     .selectinload(RoleModel.permissions)
                 )
+                .order_by(UserModel.id.desc())
             )
 
-            # Filtrer par organisation si fourni
             if organisation_id:
                 query = query.where(
                     UserModel.organisation_id == organisation_id
                 )
 
-            result = await session.execute(query)
+            result   = await session.execute(query)
             medecins = result.scalars().unique().all()
 
-            return [
-                MedecinDTO(
-                    id=m.id,
-                    nom_complet=f"Dr {m.first_name} {m.last_name}",
-                    email=m.email,
-                    telephone=m.phone_number,
-                    specialite=None,
-                )
-                for m in medecins
-            ]
+            return [self._to_dict(m) for m in medecins]
+
+    def _to_dict(self, medecin: UserModel) -> dict:
+        return {
+            "id":               medecin.id,
+            "nom_complet":      f"Dr {medecin.first_name or ''} {medecin.last_name or ''}".strip()
+                                if (medecin.first_name or medecin.last_name)
+                                else medecin.username
+                                or medecin.phone_number
+                                or "Medecin",
+            "username":         medecin.username,
+            "email":            medecin.email,
+            "telephone":        medecin.phone_number,
+            "organisation_id":  medecin.organisation_id,
+            "is_active":        medecin.is_active,
+            "roles":            medecin.role_names,
+            "created_on":       str(medecin.created_on) if medecin.created_on else None,
+        }

@@ -14,7 +14,6 @@ from app.domain.enums.blood_group import BloodGroup
 from app.infrastructure.models.multi_tenant.organisations import OrganisationModel
 from app.infrastructure.auth.password_service import PasswordService
 
-
 # ── Permissions ───────────────────────────────────────────────────
 PERMISSIONS = [
     # Mesures
@@ -90,27 +89,27 @@ ORGANISATIONS = [
         "telephone": "+22893330326",
         "email": "contact@hopital-lome.tg",
     },
-    {
-        "nom": "Clinique Biasa",
-        "code": "CLINIQUE_BIASA",
-        "adresse": "Lomé, Togo",
-        "telephone": "+22898295689",
-        "email": "contact@biasa.tg",
-    },
-    {
-        "nom": "Centre de Santé de Kara",
-        "code": "CENTRE_KARA",
-        "adresse": "Kara, Togo",
-        "telephone": "+22893330326",
-        "email": "contact@kara.tg",
-    },
-    {
-        "nom": "Hôpital de Sokodé",
-        "code": "HOPITAL_SOKODE",
-        "adresse": "Sokodé, Togo",
-        "telephone": "+22893330326",
-        "email": "contact@sokode.tg",
-    },
+    # {
+    #     "nom": "Clinique Biasa",
+    #     "code": "CLINIQUE_BIASA",
+    #     "adresse": "Lomé, Togo",
+    #     "telephone": "+22898295689",
+    #     "email": "contact@biasa.tg",
+    # },
+    # {
+    #     "nom": "Centre de Santé de Kara",
+    #     "code": "CENTRE_KARA",
+    #     "adresse": "Kara, Togo",
+    #     "telephone": "+22893330326",
+    #     "email": "contact@kara.tg",
+    # },
+    # {
+    #     "nom": "Hôpital de Sokodé",
+    #     "code": "HOPITAL_SOKODE",
+    #     "adresse": "Sokodé, Togo",
+    #     "telephone": "+22893330326",
+    #     "email": "contact@sokode.tg",
+    # },
 ]
 
 USERS = [
@@ -125,44 +124,66 @@ USERS = [
         "email_confirmed": True,
         "role": RoleUtilisateur.SUPER_ADMIN,
     },
-    {
-        "username": "dr.kofi",
-        "first_name": "Kofi",
-        "last_name": "Mensah",
-        "email": "kofi.mensah@bpmonitor.com",
-        "password_hash": PasswordService.hasher("secret"),  # secret
-        "phone_number": "+22898295689",
-        "is_active": True,
-        "email_confirmed": True,
-        "role": RoleUtilisateur.MEDECIN,
-    },
-    {
-        "username": "ama.patient",
-        "first_name": "Ama",
-        "last_name": "Koffi",
-        "email": "ama.koffi@bpmonitor.com",
-        "password_hash": PasswordService.hasher("secret"),  # secret
-        "phone_number": "+22898295689",
-        "is_active": True,
-        "email_confirmed": True,
-        "role": RoleUtilisateur.PATIENT,
-    },
+    # {
+    #     "username": "dr.kofi",
+    #     "first_name": "Kofi",
+    #     "last_name": "Mensah",
+    #     "email": "kofi.mensah@bpmonitor.com",
+    #     "password_hash": PasswordService.hasher("secret"),  # secret
+    #     "phone_number": "+22898295689",
+    #     "is_active": True,
+    #     "email_confirmed": True,
+    #     "role": RoleUtilisateur.MEDECIN,
+    # },
+    # {
+    #     "username": "ama.patient",
+    #     "first_name": "Ama",
+    #     "last_name": "Koffi",
+    #     "email": "ama.koffi@bpmonitor.com",
+    #     "password_hash": PasswordService.hasher("secret"),  # secret
+    #     "phone_number": "+22898295689",
+    #     "is_active": True,
+    #     "email_confirmed": True,
+    #     "role": RoleUtilisateur.PATIENT,
+    # },
 ]
 
 
 # ── Profils patients ──────────────────────────────────────────────
-PATIENTS = [
-    {
-        "email": "ama.koffi@bpmonitor.com",
-        "gender": "F",
-        "birth_date": date(1990, 5, 15),
-        "address": "Lomé, Togo",
-        "emergency_contact": "+22898295689",
-        "blood_group": BloodGroup.A_PLUS,
-    },
-]
+# PATIENTS = [
+#     {
+#         "email": "ama.koffi@bpmonitor.com",
+#         "gender": "F",
+#         "birth_date": date(1990, 5, 15),
+#         "address": "Lomé, Togo",
+#         "emergency_contact": "+22898295689",
+#         "blood_group": BloodGroup.A_PLUS,
+#     },
+# ]
 
+# Valeurs par défaut pour chaque organisation
+CONFIGS_DEFAUT = {
+    # Créneaux horaires
+    "creneau_matin_debut":    {"valeur": "16",    "description": "Début créneau matin (heure UTC)"},
+    "creneau_matin_fin":      {"valeur": "16:20",    "description": "Fin créneau matin (heure UTC)"},
+    "creneau_soir_debut":     {"valeur": "16:30",   "description": "Début créneau soir (heure UTC)"},
+    "creneau_soir_fin":       {"valeur": "22",   "description": "Fin créneau soir (heure UTC)"},
 
+    # Test / Debug
+    "debug_heure_simulee":    {"valeur": "16",     "description": "Heure simulée pour tests (vide = heure réelle)"},
+    "app_env":                {"valeur": "prod", "description": "Environnement (prod / test)"},
+
+    # Seuils BP
+    "seuil_sys_eleve":        {"valeur": "130",  "description": "Seuil systolique élevé (mmHg)"},
+    "seuil_dia_eleve":        {"valeur": "85",   "description": "Seuil diastolique élevé (mmHg)"},
+    "seuil_sys_hypertension": {"valeur": "140",  "description": "Seuil systolique hypertension (mmHg)"},
+    "seuil_dia_hypertension": {"valeur": "90",   "description": "Seuil diastolique hypertension (mmHg)"},
+    "seuil_sys_critique":     {"valeur": "180",  "description": "Seuil systolique critique (mmHg)"},
+    "seuil_dia_critique":     {"valeur": "110",  "description": "Seuil diastolique critique (mmHg)"},
+
+    # QR Code
+    "qrcode_expiration_jours": {"valeur": "30",  "description": "Durée d'expiration des QR codes (jours)"},
+}
 
 # ── Fonctions ─────────────────────────────────────────────────────
 async def seed_tenants(session: AsyncSession) -> dict[str, OrganisationModel]:
@@ -314,7 +335,7 @@ async def run_seed() -> None:
             roles_map = await seed_roles(session, permissions_map)
             users_map = await seed_users(session, roles_map)
             await seed_tenants(session)
-            await seed_patients(session, users_map)
+            # await seed_patients(session, users_map)
 
             await session.commit()
             print("\n✅ Seed terminé avec succès !\n")

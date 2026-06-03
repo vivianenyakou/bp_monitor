@@ -13,6 +13,20 @@ from app.interfaces.schemas.organisation import CreerOrganisationSchema, Organis
 router = APIRouter(prefix="/organisations", tags=["Organisations"])
 
 
+@router.get(
+    "/publiques",
+    response_model=list[OrganisationSchema],
+    summary="Lister les organisations (public)",
+)
+async def lister_organisations_publiques():
+    """Retourne les organisations actives — accessible sans authentification (inscription)."""
+    try:
+        use_case = ListerOrganisationsUseCase()
+        return await use_case.executer()
+    except BPMonitorException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.message)
+
+
 @router.post(
     "/",
     response_model=OrganisationSchema,

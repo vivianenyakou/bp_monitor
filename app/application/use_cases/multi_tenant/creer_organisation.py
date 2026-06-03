@@ -1,9 +1,11 @@
 from sqlalchemy import select
 
 from app.application.dtos.organisation_dto import CreerOrganisationDTO, OrganisationDTO
+from app.application.services.phone_number_formatter import normaliser_telephone_togo
 from app.core.exceptions import ConflictError
 from app.infrastructure.db.session import AsyncSessionFactory
 from app.infrastructure.models.multi_tenant.organisations import OrganisationModel
+from app.infrastructure.services.config_service import ConfigService
 
 
 class CreerOrganisationUseCase:
@@ -25,7 +27,7 @@ class CreerOrganisationUseCase:
                 nom=dto.nom,
                 code=dto.code.upper(),
                 adresse=dto.adresse,
-                telephone=dto.telephone,
+                telephone=normaliser_telephone_togo(dto.telephone),
                 email=dto.email,
                 est_actif=True,
                 nif_structure=dto.nif_structure,
@@ -34,7 +36,8 @@ class CreerOrganisationUseCase:
             session.add(organisation)
             await session.commit()
             await session.refresh(organisation)
-
+            await ConfigService.initialiser_organisation(organisation.id)
+            
             return OrganisationDTO(
                 id=organisation.id,
                 nom=organisation.nom,
