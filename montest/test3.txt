@@ -1,0 +1,18 @@
+
+    Quand le patient scan le code Qr dans le bureau d'un docteur, l'information qui est retouver c'est le nom de l'organisation, le numéro , 
+    et le nom du médecin.
+
+
+
+
+Ce qui reste en attente (pour ne rien perdre) :
+
+Point 3 — réparer GET /creneau (ne détecte pas le soir dynamique, pas d'ancrage)
+Alerte critique — dto.medicament_pris est vide à la 3ᵉ mesure maintenant que la réponse arrive après ; à recâbler
+Message message_bp_basse — aucune catégorie « hypotension » ne le déclenche
+Migration des orgs existantes — leurs anciens seuils en base priment sur les nouvelles valeurs Home BP
+Nettoyage — colonnes seuil_* sur PatientModel (doublon, le seuil est global)
+
+Vous voulez enchaîner sur le point 3, ou vous arrêter là pour aujourd'hui ?
+
+

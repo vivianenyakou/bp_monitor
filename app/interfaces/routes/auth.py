@@ -1,14 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.security import HTTPBearer
 
 from app.application.dtos.auth_dto import CreerUtilisateurDTO, LoginDTO, RegisterDTO
+from app.application.use_cases.auth.app.application.use_cases.auth.changer_statut_utilisateur import ChangerStatutUtilisateurUseCase
 from app.application.use_cases.auth.app.application.use_cases.auth.creer_utilisateur import CreerUtilisateurUseCase
 from app.application.use_cases.auth.login import LoginUseCase
 from app.application.use_cases.auth.register import RegisterUseCase
 from app.domain.enums.role_enum import RoleUtilisateur
 from app.domain.enums.role_enum import RoleUtilisateur
 from app.core.exceptions import BPMonitorException
-from app.infrastructure.auth.jwt_service import JWTService
 from app.infrastructure.models.auth.user import UserModel
 from app.interfaces.dependencies.authorization import get_current_user, require_any_role
 from app.interfaces.schemas.auth import (
@@ -106,5 +106,20 @@ async def creer_utilisateur(
             specialite=body.specialite,
         )
         return await use_case.executer(dto)
+    except BPMonitorException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.message)
+    
+@router.patch(
+    "/utilisateurs/{user_id}/statut",
+    summary="Activer ou désactiver un utilisateur",
+)
+async def changer_statut_utilisateur(
+    user_id: int,
+    is_active: bool,
+    current_user: UserModel = Depends(require_any_role(RoleUtilisateur.ADMIN, RoleUtilisateur.SUPER_ADMIN)),
+):
+    try:
+        use_case = ChangerStatutUtilisateurUseCase()
+        return await use_case.executer(user_id, is_active)
     except BPMonitorException as e:
         raise HTTPException(status_code=e.status_code, detail=e.message)

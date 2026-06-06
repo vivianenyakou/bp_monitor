@@ -20,12 +20,14 @@ from app.domain.enums.bp_category import (
 )
 from app.domain.services.analyseur_ta import AnalyseurTA
 from app.domain.services.creneau_service import Creneau, CreneauService
+from app.domain.value_objects.seuil import SeuilTA
 from app.domain.value_objects.tension_arterielle import TensionArterielle
 from app.infrastructure.db.session import AsyncSessionFactory
 from app.infrastructure.models.bp.alerte import AlerteModel
 from app.infrastructure.models.bp.mesure import MesureModel
 from app.infrastructure.models.bp.patient import PatientModel
 from app.infrastructure.models.bp.session import SessionModel
+from app.infrastructure.services.config_service import ConfigService
 
 class CreerMesureSessionUseCase:
     """
@@ -46,12 +48,11 @@ class CreerMesureSessionUseCase:
             NotificationService,
         )
         self._notifications = notification_service or NotificationService()
-        self._analyseur     = AnalyseurTA()
 
     async def executer(self, dto: CreerMesureAvecSessionDTO) -> dict:
         async with AsyncSessionFactory() as db:
 
-            # 1. Vérifier le patient (dto.patient_id = user.id côté mobile)
+            # 1. Patient
             result = await db.execute(
                 select(PatientModel)
                 .where(PatientModel.user_id == dto.patient_id)
@@ -59,113 +60,118 @@ class CreerMesureSessionUseCase:
             )
             patient = result.scalar_one_or_none()
             if not patient:
-                raise PatientNotFoundError()
-
-            # 2. Vérifier le créneau
+                raise PatientNotFoundError()            
             patient_org_id = patient.organisation_id or 1
+            
+            seuils = await ConfigService.get_seuils(patient_org_id, patient.est_hypertendu)
+            self._analyseur = AnalyseurTA(seuils)
+
             creneau_service = await CreneauService.pour_organisation(patient_org_id)
+
+            # 2. Session existante (SANS créer) — pour l'ancrage du soir
+            res_sess = await db.execute(
+                select(SessionModel)
+                .where(SessionModel.patient_id == patient.id)
+                .where(SessionModel.protocole_termine == False)
+                .order_by(SessionModel.id.desc())
+            )
+            sess_existante = res_sess.scalar_one_or_none()
+
+            # 3. Ancrage : 1ère mesure matin du jour actif
+            premiere_matin = None
+            if sess_existante:
+                jour_actuel = self._calculer_jour(sess_existante, date.today())
+                res_m = await db.execute(
+                    select(MesureModel)
+                    .where(MesureModel.session_id == sess_existante.session_id)
+                    .where(MesureModel.periode == PeriodeMesure.MATIN)
+                    .where(MesureModel.jour == jour_actuel)
+                    .where(MesureModel.numero_mesure == 1)
+                )
+                mesure_ref = res_m.scalar_one_or_none()
+                premiere_matin = mesure_ref.prise_le if mesure_ref else None
+            creneau_service.definir_ancrage_soir(premiere_matin)
+
+            # 4. Vérifier le créneau (soir dynamique)
             creneau = creneau_service.creneau_actuel()
             if creneau == Creneau.HORS_CRENEAU:
-                raise ApplicationException(
-                    creneau_service.prochain_creneau()
-                )
+                raise ApplicationException(creneau_service.prochain_creneau())
 
-            # 3. Obtenir ou créer la session (patient.id = PK de patients)
+            # 5. Créer/obtenir la session
             sess = await self._obtenir_ou_creer_session(db, patient.id)
 
-            # 4. Déterminer le jour actuel
-            aujourd_hui = date.today()
-            jour        = self._calculer_jour(sess, aujourd_hui)
-
-            # 5. Vérifier que le jour est autorisé
+            # 6. Jour actuel + vérifier qu'il est autorisé
+            jour = self._calculer_jour(sess, date.today())
             if jour == 2 and not sess.jour1_complete:
-                raise ApplicationException(
-                    "Vous devez compléter le Jour 1 avant de passer au Jour 2."
-                )
+                raise ApplicationException("Vous devez compléter le Jour 1 avant le Jour 2.")
             if jour == 3 and not sess.jour2_complete:
-                raise ApplicationException(
-                    "Vous devez compléter le Jour 2 avant de passer au Jour 3."
-                )
+                raise ApplicationException("Vous devez compléter le Jour 2 avant le Jour 3.")
 
-            # 6. Vérifier les mesures restantes dans le créneau
-            mesures_faites  = self._mesures_faites(sess, jour, creneau)
+            # 7. Mesures restantes dans le créneau
+            mesures_faites = self._mesures_faites(sess, jour, creneau)
             if mesures_faites >= 3:
                 raise ApplicationException(
                     f"Vous avez déjà effectué vos 3 mesures du "
-                    f"{'matin' if creneau == Creneau.MATIN else 'soir'} "
-                    f"pour le Jour {jour}."
+                    f"{'matin' if creneau == Creneau.MATIN else 'soir'} pour le Jour {jour}."
                 )
 
-            # 7. Créer la tension
+            # 8. Tension
             periode = self._periode_depuis_creneau(creneau)
             tension = TensionArterielle(
-                systolique=  dto.systolique,
-                diastolique= dto.diastolique,
-                pouls=       dto.pouls,
+                systolique=dto.systolique, diastolique=dto.diastolique, pouls=dto.pouls,
             )
-            categorie      = self._analyseur.categoriser(tension)
-            numero_mesure  = mesures_faites + 1
+            categorie     = self._analyseur.categoriser(tension)
+            numero_mesure = mesures_faites + 1
 
-            # 8. Enregistrer la mesure
+            # 9. Enregistrer la mesure
             mesure = MesureModel(
-                patient_id=    patient.id,
-                systolique=    dto.systolique,
-                diastolique=   dto.diastolique,
-                pouls=         dto.pouls,
-                periode=       periode,
-                jour=          jour,
-                numero_mesure= numero_mesure,
-                categorie=     categorie,
-                session_id=    sess.session_id,
-                prise_le=      datetime.now(timezone.utc),
-                notes=         dto.notes,
+                patient_id=patient.id,
+                systolique=dto.systolique,
+                diastolique=dto.diastolique,
+                pouls=dto.pouls,
+                periode=periode,
+                jour=jour,
+                numero_mesure=numero_mesure,
+                categorie=categorie,
+                session_id=sess.session_id,
+                prise_le=datetime.now(timezone.utc),
+                notes=dto.notes,
             )
             db.add(mesure)
 
-            # 9. Mettre à jour le compteur de la session
+            # 10. Compteur
             self._incrementer_compteur(sess, jour, creneau)
 
-            # 10. Vérifier si le créneau est complet (3 mesures)
-            alerte_dto     = None
+            # 11. Créneau complet → moyenne + alerte
+            alerte_dto       = None
             popup_medicament = False
-
             mesures_apres = self._mesures_faites(sess, jour, creneau)
             if mesures_apres >= 3:
-                # Calculer la moyenne du créneau
                 await db.flush()
                 moyenne = await self._calculer_moyenne_creneau(
                     db, patient.id, sess.session_id, jour, creneau
                 )
-
-                # Vérifier si critique
                 if moyenne:
                     niveau = self._analyseur.niveau_alerte(moyenne)
-                    if niveau in (NiveauAlerte.CRITIQUE, NiveauAlerte.AVERTISSEMENT):
+                    if niveau == NiveauAlerte.CRITIQUE:
+                            alerte_dto = await self._creer_alerte(db, patient, moyenne, niveau)
+
+                    if moyenne == CategorieTA.CRITIQUE:
                         popup_medicament = True
 
-                        # Créer alerte si médicament pris ou non fourni
-                        if dto.medicament_pris is not False:
-                            alerte_dto = await self._creer_alerte(
-                                db, patient, moyenne, niveau
-                            )
-
-            # 11. Vérifier si le jour est complet
+            # 12. Jour complet ?
             self._verifier_completion_jour(sess, jour)
 
-            # 12. Vérifier si le protocole est terminé
+            # 13. Protocole terminé ?
             message_fin = None
             if sess.jour1_complete and sess.jour2_complete and sess.jour3_complete:
                 sess.protocole_termine = True
-                sess.termine_le        = datetime.now(timezone.utc)
-                message_fin = (
-                    "🎉 Félicitations ! Vous avez terminé votre protocole "
-                    "d'automesure tensionnelle sur 3 jours. Vos résultats "
-                    "ont été enregistrés et sont disponibles pour votre médecin."
-                )
+                sess.termine_le = datetime.now(timezone.utc)
+                message_fin =  await ConfigService.get(patient_org_id, "message_felicitations")
 
             await db.commit()
 
-            # 13. Envoyer les notifications après commit
+            # 14. Notifications
             if alerte_dto and self._notifications:
                 try:
                     await self._notifications.notifier_medecin(alerte_dto)
@@ -173,21 +179,21 @@ class CreerMesureSessionUseCase:
                     print(f"[Notification] Erreur : {e}")
 
             return {
-                "mesure_id":        mesure.id,
-                "session_id":       sess.session_id,
-                "jour":             jour,
-                "creneau":          creneau.value,
-                "numero_mesure":    numero_mesure,
-                "categorie":        categorie.value,
+                "mesure_id": mesure.id,
+                "session_id": sess.session_id,
+                "jour": jour,
+                "creneau": creneau.value,
+                "numero_mesure": numero_mesure,
+                "categorie": categorie.value,
                 "mesures_restantes": max(0, 3 - mesures_apres),
                 "popup_medicament": popup_medicament,
-                "message_fin":      message_fin,
-                "jour1_complete":   sess.jour1_complete,
-                "jour2_complete":   sess.jour2_complete,
-                "jour3_complete":   sess.jour3_complete,
+                "message_fin": message_fin,
+                "jour1_complete": sess.jour1_complete,
+                "jour2_complete": sess.jour2_complete,
+                "jour3_complete": sess.jour3_complete,
                 "protocole_termine": sess.protocole_termine,
             }
-
+            
     async def _obtenir_ou_creer_session(
         self, db, patient_id: int
     ) -> SessionModel:

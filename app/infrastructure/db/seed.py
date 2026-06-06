@@ -89,27 +89,27 @@ ORGANISATIONS = [
         "telephone": "+22893330326",
         "email": "contact@hopital-lome.tg",
     },
-    # {
-    #     "nom": "Clinique Biasa",
-    #     "code": "CLINIQUE_BIASA",
-    #     "adresse": "Lomé, Togo",
-    #     "telephone": "+22898295689",
-    #     "email": "contact@biasa.tg",
-    # },
-    # {
-    #     "nom": "Centre de Santé de Kara",
-    #     "code": "CENTRE_KARA",
-    #     "adresse": "Kara, Togo",
-    #     "telephone": "+22893330326",
-    #     "email": "contact@kara.tg",
-    # },
-    # {
-    #     "nom": "Hôpital de Sokodé",
-    #     "code": "HOPITAL_SOKODE",
-    #     "adresse": "Sokodé, Togo",
-    #     "telephone": "+22893330326",
-    #     "email": "contact@sokode.tg",
-    # },
+    {
+        "nom": "Clinique Biasa",
+        "code": "CLINIQUE_BIASA",
+        "adresse": "Lomé, Togo",
+        "telephone": "+22898295689",
+        "email": "contact@biasa.tg",
+    },
+    {
+        "nom": "Centre de Santé de Kara",
+        "code": "CENTRE_KARA",
+        "adresse": "Kara, Togo",
+        "telephone": "+22893330326",
+        "email": "contact@kara.tg",
+    },
+    {
+        "nom": "Hôpital de Sokodé",
+        "code": "HOPITAL_SOKODE",
+        "adresse": "Sokodé, Togo",
+        "telephone": "+22893330326",
+        "email": "contact@sokode.tg",
+    },
 ]
 
 USERS = [
@@ -124,64 +124,84 @@ USERS = [
         "email_confirmed": True,
         "role": RoleUtilisateur.SUPER_ADMIN,
     },
-    # {
-    #     "username": "dr.kofi",
-    #     "first_name": "Kofi",
-    #     "last_name": "Mensah",
-    #     "email": "kofi.mensah@bpmonitor.com",
-    #     "password_hash": PasswordService.hasher("secret"),  # secret
-    #     "phone_number": "+22898295689",
-    #     "is_active": True,
-    #     "email_confirmed": True,
-    #     "role": RoleUtilisateur.MEDECIN,
-    # },
-    # {
-    #     "username": "ama.patient",
-    #     "first_name": "Ama",
-    #     "last_name": "Koffi",
-    #     "email": "ama.koffi@bpmonitor.com",
-    #     "password_hash": PasswordService.hasher("secret"),  # secret
-    #     "phone_number": "+22898295689",
-    #     "is_active": True,
-    #     "email_confirmed": True,
-    #     "role": RoleUtilisateur.PATIENT,
-    # },
+    {
+        "username": "dr.kofi",
+        "first_name": "Kofi",
+        "last_name": "Mensah",
+        "email": "kofi.mensah@bpmonitor.com",
+        "password_hash": PasswordService.hasher("secret"),  # secret
+        "phone_number": "+22898295689",
+        "is_active": True,
+        "email_confirmed": True,
+        "role": RoleUtilisateur.MEDECIN,
+    },
+    {
+        "username": "ama.patient",
+        "first_name": "Ama",
+        "last_name": "Koffi",
+        "email": "ama.koffi@bpmonitor.com",
+        "password_hash": PasswordService.hasher("secret"),  # secret
+        "phone_number": "+22898295689",
+        "is_active": True,
+        "email_confirmed": True,
+        "role": RoleUtilisateur.PATIENT,
+    },
 ]
 
 
 # ── Profils patients ──────────────────────────────────────────────
-# PATIENTS = [
-#     {
-#         "email": "ama.koffi@bpmonitor.com",
-#         "gender": "F",
-#         "birth_date": date(1990, 5, 15),
-#         "address": "Lomé, Togo",
-#         "emergency_contact": "+22898295689",
-#         "blood_group": BloodGroup.A_PLUS,
-#     },
-# ]
+PATIENTS = [
+    {
+        "email": "ama.koffi@bpmonitor.com",
+        "gender": "F",
+        "birth_date": date(1990, 5, 15),
+        "address": "Lomé, Togo",
+        "emergency_contact": "+22898295689",
+        "blood_group": BloodGroup.A_PLUS,
+    },
+]
 
-# Valeurs par défaut pour chaque organisation
 # Valeurs par défaut pour chaque organisation
 CONFIGS_DEFAUT = {
     # Créneaux horaires
-    "creneau_matin_debut":    {"valeur": "0",    "description": "Début créneau matin (heure UTC)"},
-    "creneau_matin_fin":      {"valeur": "9",    "description": "Fin créneau matin (heure UTC)"},
-    "creneau_soir_debut":     {"valeur": "18",   "description": "Début créneau soir (heure UTC)"},
-    "creneau_soir_fin":       {"valeur": "22",   "description": "Fin créneau soir (heure UTC)"},
+    "creneau_matin_debut":    {"valeur": "0",  "description": "Début créneau matin (heure GMT)"},
+    "creneau_matin_fin":      {"valeur": "9",  "description": "Fin créneau matin (heure GMT)"},
+    "creneau_soir_fin":       {"valeur": "22", "description": "Fin créneau soir — borne fixe (heure GMT)"},
+    # ⚠️ supprimer creneau_soir_debut (le soir s'ouvre dynamiquement)
 
+    # Rythme des prises
+    "intervalle_matin_soir":    {"valeur": "8", "description": "Heures après la 1ère mesure matin pour ouvrir le soir"},
+    "nombre_mesures_par_creneau": {"valeur": "3", "description": "Nombre de mesures par créneau"},
+    "nombre_jours_consecutifs": {"valeur": "3", "description": "Nombre de jours consécutifs de suivi"},
+
+    # Seuils BP — profil NON-HYPERTENDU (Home BP, ESC 2024)
+    "seuil_sys_eleve":        {"valeur": "120", "description": "Seuil systolique élevé (mmHg)"},
+    "seuil_dia_eleve":        {"valeur": "70",  "description": "Seuil diastolique élevé (mmHg)"},
+    "seuil_sys_hypertension": {"valeur": "135", "description": "Seuil systolique hypertension (mmHg)"},
+    "seuil_dia_hypertension": {"valeur": "85",  "description": "Seuil diastolique hypertension (mmHg)"},
+    "seuil_sys_critique":     {"valeur": "180", "description": "Seuil systolique critique (mmHg)"},
+    "seuil_dia_critique":     {"valeur": "110", "description": "Seuil diastolique critique (mmHg)"},
+
+    # Seuils BP — profil HYPERTENDU (identiques pour l'instant — à valider médicalement)
+    "seuil_sys_eleve_hta":        {"valeur": "120", "description": "Seuil systolique élevé — hypertendu (mmHg)"},
+    "seuil_dia_eleve_hta":        {"valeur": "70",  "description": "Seuil diastolique élevé — hypertendu (mmHg)"},
+    "seuil_sys_hypertension_hta": {"valeur": "135", "description": "Seuil systolique hypertension — hypertendu (mmHg)"},
+    "seuil_dia_hypertension_hta": {"valeur": "85",  "description": "Seuil diastolique hypertension — hypertendu (mmHg)"},
+    "seuil_sys_critique_hta":     {"valeur": "180", "description": "Seuil systolique critique — hypertendu (mmHg)"},
+    "seuil_dia_critique_hta":     {"valeur": "110", "description": "Seuil diastolique critique — hypertendu (mmHg)"},
+    
+    # Messages d'alerte patient
+    "message_bp_basse":   {"valeur": "Votre tension est trop basse, veuillez contacter votre médecin.", "description": "Message tension basse"},
+    "message_bp_haute":   {"valeur": "Votre tension est trop haute, veuillez contacter votre médecin.", "description": "Message tension haute"},
+    "message_bp_normale": {"valeur": "Votre tension est normale, continuez à suivre les recommandations de votre médecin.", "description": "Message tension normale"},
+    "message_bp_critique_pris":     {"valeur": "Votre tension est critique. Contactez immédiatement votre médecin.", "description": "Message critique — médicament déjà pris"},
+    "message_bp_critique_non_pris": {"valeur": "Prenez votre médicament et consultez votre médecin.", "description": "Message critique — médicament non pris"},
+    "message_felicitations": {"valeur": "Félicitations, votre tension est contrôlée.", "description": "Message fin des 3 jours"},
+    
     # Test / Debug
     "debug_heure_simulee":    {"valeur": "",     "description": "Heure simulée pour tests (vide = heure réelle)"},
     "app_env":                {"valeur": "prod", "description": "Environnement (prod / test)"},
-
-    # Seuils BP
-    "seuil_sys_eleve":        {"valeur": "130",  "description": "Seuil systolique élevé (mmHg)"},
-    "seuil_dia_eleve":        {"valeur": "85",   "description": "Seuil diastolique élevé (mmHg)"},
-    "seuil_sys_hypertension": {"valeur": "140",  "description": "Seuil systolique hypertension (mmHg)"},
-    "seuil_dia_hypertension": {"valeur": "90",   "description": "Seuil diastolique hypertension (mmHg)"},
-    "seuil_sys_critique":     {"valeur": "180",  "description": "Seuil systolique critique (mmHg)"},
-    "seuil_dia_critique":     {"valeur": "110",  "description": "Seuil diastolique critique (mmHg)"},
-
+    
     # QR Code
     "qrcode_expiration_jours": {"valeur": "30",  "description": "Durée d'expiration des QR codes (jours)"},
 }

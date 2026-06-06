@@ -2,10 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.application.dtos.organisation_dto import CreerOrganisationDTO
 from app.application.use_cases.multi_tenant.creer_organisation import CreerOrganisationUseCase
+from app.application.use_cases.multi_tenant.desactiver_organisation import ChangerStatutOrganisationUseCase
+from app.application.use_cases.multi_tenant.desactiver_organisation import ChangerStatutOrganisationUseCase
 from app.application.use_cases.multi_tenant.lister_organisantions import ListerOrganisationsUseCase
 from app.core.exceptions import BPMonitorException
 from app.domain.enums.role_enum import RoleUtilisateur
 from app.domain.enums.role_enum import RoleUtilisateur
+from app.infrastructure.models.auth.user import UserModel
 from app.interfaces.dependencies.authorization import require_any_role, require_super_admin
 from app.interfaces.schemas.organisation import CreerOrganisationSchema, OrganisationSchema
 
@@ -65,5 +68,21 @@ async def lister_organisations(
     try:
         use_case = ListerOrganisationsUseCase()
         return await use_case.executer()
+    except BPMonitorException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.message)
+    
+
+@router.patch(
+    "/organisation/{id}/statut",
+    summary="Activer ou désactiver une organisation",
+)
+async def changer_statut_organisation(
+    organisation_id: int,
+    est_actif: bool,
+    current_user: UserModel = Depends(require_any_role(RoleUtilisateur.ADMIN, RoleUtilisateur.SUPER_ADMIN)),
+):
+    try:
+        use_case = ChangerStatutOrganisationUseCase()
+        return await use_case.executer(organisation_id, est_actif)
     except BPMonitorException as e:
         raise HTTPException(status_code=e.status_code, detail=e.message)

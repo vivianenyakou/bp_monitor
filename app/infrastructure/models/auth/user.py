@@ -37,12 +37,6 @@ class UserModel(AuditableEntity):
         uselist=False,
     )
     organisation = relationship("OrganisationModel", back_populates="utilisateurs")
-    roles = relationship(
-        "RoleModel",
-        secondary=user_roles,
-        back_populates="users",
-    )
-
     @property
     def role_names(self) -> list[str]:
         return [role.name for role in self.roles]
