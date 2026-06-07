@@ -22,15 +22,22 @@
             <meta-data
                android:name="io.flutter.embedding.android.EnableImpeller"
                android:value="false" />
+
+            <!-- 1. Launcher : crée l'icône de l'app -->
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- 2. Deep link : ouvrir l'app via un lien (QR code) -->
+            <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
                     android:scheme="http"
-                    android:host="10.250.90.39:8000"
+                    android:host="api.g-autobp.tech"
+                    android:port="8000"
                     android:pathPrefix="/join" />
             </intent-filter>
         </activity>

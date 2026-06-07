@@ -142,8 +142,19 @@ class CreerMesureSessionUseCase:
             # 10. Compteur
             self._incrementer_compteur(sess, jour, creneau)
 
-            # 11. Créneau complet → moyenne + alerte
-            alerte_dto       = None
+            # 11. URGENCE — alerte immédiate si CETTE mesure est critique (≥180/110)
+            alerte_dto = None
+            if categorie == CategorieTA.CRITIQUE:
+                tension_mesure = TensionArterielle(
+                    systolique=dto.systolique,
+                    diastolique=dto.diastolique,
+                    pouls=dto.pouls,
+                )
+                alerte_dto = await self._creer_alerte(
+                    db, patient, tension_mesure, NiveauAlerte.CRITIQUE
+                )
+
+            # 12. Pop-up médicament — si moyenne du créneau élevée/critique (informatif)
             popup_medicament = False
             mesures_apres = self._mesures_faites(sess, jour, creneau)
             if mesures_apres >= 3:
@@ -153,28 +164,52 @@ class CreerMesureSessionUseCase:
                 )
                 if moyenne:
                     categorie_moyenne = self._analyseur.categoriser(moyenne)
-                    niveau = self._analyseur.niveau_alerte(moyenne)
-                    
-                    if niveau == (NiveauAlerte.CRITIQUE or NiveauAlerte.AVERTISSEMENT):
-                        alerte_dto = await self._creer_alerte(db, patient, moyenne, niveau)
-
-                    if categorie_moyenne in (CategorieTA.ELEVEE,CategorieTA.HYPERTENSION,CategorieTA.CRITIQUE,
-                                        ):
-                                            popup_medicament = True
-
+                    if categorie_moyenne in (
+                        CategorieTA.ELEVEE,
+                        CategorieTA.HYPERTENSION,
+                        CategorieTA.CRITIQUE,
+                    ):
+                        popup_medicament = True
             # 12. Jour complet ?
             self._verifier_completion_jour(sess, jour)
 
             # 13. Protocole terminé ?
             message_fin = None
+            bilan_alerte_dto = None
             if sess.jour1_complete and sess.jour2_complete and sess.jour3_complete:
                 sess.protocole_termine = True
                 sess.termine_le = datetime.utcnow()
-                message_fin =  await ConfigService.get(patient_org_id, "message_felicitations")
 
+                await db.flush()
+                moyenne_globale = await self._calculer_moyenne_globale(
+                    db, patient.id, sess.session_id
+                )
+                if moyenne_globale:
+                    cat = self._analyseur.categoriser(moyenne_globale)
+
+                    # Cas commun : non contrôlé = moyenne ≥ 135/85 (hypertension ou critique)
+                    non_controle = cat in (CategorieTA.HYPERTENSION, CategorieTA.CRITIQUE)
+
+                    if non_controle:
+                        message_fin = await ConfigService.get(patient_org_id, "message_non_controle")
+                        bilan_alerte_dto = await self._creer_alerte(
+                            db, patient, moyenne_globale, NiveauAlerte.AVERTISSEMENT
+                        )
+                    elif (not patient.est_hypertendu) and cat == CategorieTA.ELEVEE:
+                        # non-hypertendu, palier "élevé" : écran seulement, pas de SMS
+                        message_fin = await ConfigService.get(patient_org_id, "message_surveillance")
+                    else:
+                        # contrôlé / normale : félicitations à l'écran, pas de SMS
+                        message_fin = await ConfigService.get(patient_org_id, "message_felicitations")
             await db.commit()
 
             # 14. Notifications
+            if bilan_alerte_dto and self._notifications:
+                try:
+                    await self._notifications.notifier_medecin(bilan_alerte_dto)
+                except Exception as e:
+                    print(f"[Notification bilan] Erreur : {e}")
+                    
             if alerte_dto and self._notifications:
                 try:
                     await self._notifications.notifier_medecin(alerte_dto)
@@ -307,6 +342,20 @@ class CreerMesureSessionUseCase:
             pouls=       moy_pouls,
         )
 
+    async def _calculer_moyenne_globale(self, db, patient_id: int, session_id: str):
+            """Moyenne de toutes les mesures de la session (les 18)."""
+            result = await db.execute(
+                select(MesureModel)
+                .where(MesureModel.patient_id == patient_id)
+                .where(MesureModel.session_id == session_id)
+            )
+            mesures = result.scalars().all()
+            if not mesures:
+                return None
+            moy_sys = round(sum(m.systolique for m in mesures) / len(mesures))
+            moy_dia = round(sum(m.diastolique for m in mesures) / len(mesures))
+            return TensionArterielle(systolique=moy_sys, diastolique=moy_dia, pouls=None)
+        
     async def _creer_alerte(
         self, db, patient, tension, niveau
     ) -> AlerteDTO:
