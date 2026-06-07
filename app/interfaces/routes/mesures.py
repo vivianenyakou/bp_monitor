@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from app.application.dtos.mesure_dto import CreerMesureDTO
 from app.application.use_cases.mesure.creer_mesure import CreerMesureUseCase
 from app.application.use_cases.mesure.lister_mesures import ListerMesuresUseCase
+from app.application.use_cases.mesure.obtenir_moyenne_dernier_creneau import ObtenirMoyenneDernierCreneauUseCase
 from app.application.use_cases.mesure.obtenir_resume import ObtenirResumeUseCase
 from app.core.exceptions import BPMonitorException
 from app.domain.enums.role_enum import RoleUtilisateur
@@ -63,8 +64,6 @@ async def lister_mesures(patient_id: int, current_user: UserModel = Depends(requ
         return await use_case.executer(patient_id)
     except BPMonitorException as e:
         raise HTTPException(status_code=e.status_code, detail=e.message)
-
-
 @router.get(
     "/resume/{patient_id}/{session_id}",
     response_model=ResumeSessionSchema,
@@ -80,3 +79,20 @@ async def obtenir_resume(patient_id: int, session_id: str, current_user: UserMod
         return await use_case.executer(patient_id, session_id)
     except BPMonitorException as e:
         raise HTTPException(status_code=e.status_code, detail=e.message)
+    
+@router.get(
+    "/{patient_id}/moyenne-creneau",
+    summary="Moyenne du dernier créneau complet (catégorisée)",
+)
+async def moyenne_dernier_creneau(
+    patient_id: int,
+    current_user: UserModel = Depends(
+        require_any_role(RoleUtilisateur.PATIENT, RoleUtilisateur.MEDECIN, RoleUtilisateur.ADMIN , RoleUtilisateur.SECRETAIRE , RoleUtilisateur.SUPER_ADMIN)
+    ),
+):
+    try:
+        use_case = ObtenirMoyenneDernierCreneauUseCase()
+        return await use_case.executer(patient_id)
+    except BPMonitorException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.message)
+    

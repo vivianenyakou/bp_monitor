@@ -36,4 +36,5 @@ class ApiEndpoints {
   static String sessionMedicament(String sessionId) => '/sessions/$sessionId/medicament';
   static String validerQRCode(String token) =>
     '/qrcodes/valider/$token';
+  static String moyenneCreneau(int patientId) => '/mesures/$patientId/moyenne-creneau';
 }
