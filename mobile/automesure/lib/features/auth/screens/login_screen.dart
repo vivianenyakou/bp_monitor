@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/utils/post_login_redirect.dart';
 import '../providers/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -36,16 +37,17 @@ Future<void> _login() async {
 
     final user = ref.read(authProvider).user;
 
-    if (user?.isSuperAdmin == true || user?.isAdmin == true) {
-      context.go('/admin');
-    } else if (user?.isMedecin == true) {
-      context.go('/medecin/dashboard');
-    } else if (user?.isPatient == true) {
-      context.go(user!.doitFaireSetup ? '/setup-profil' : '/home');
-    } else {
-      context.go('/home');
+  // Onboarding : une seule fois, avant toute autre redirection
+    final prefs = await SharedPreferences.getInstance();
+    final onboardingVu = prefs.getBool('onboarding_vu') ?? false;
+    if (!onboardingVu) {
+      if (mounted) context.go('/onboarding');
+      return;
     }
-  }
+   if (mounted) {
+      redirigerSelonRole(context, user);
+    }    
+}
 
   @override
   Widget build(BuildContext context) {
@@ -61,23 +63,23 @@ Future<void> _login() async {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton.icon(
-                    onPressed: () => context.go('/onboarding'),
-                    icon: const Icon(
-                      Icons.arrow_back,
-                      color: AppColors.textSecondary,
-                    ),
-                    label: Text(
-                      'Retour',
-                      style: AppTextStyles.body.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
+                // Align(
+                //   alignment: Alignment.centerLeft,
+                //   child: TextButton.icon(
+                //     onPressed: () => context.go('/onboarding'),
+                //     icon: const Icon(
+                //       Icons.arrow_back,
+                //       color: AppColors.textSecondary,
+                //     ),
+                //     label: Text(
+                //       'Retour',
+                //       style: AppTextStyles.body.copyWith(
+                //         color: AppColors.textSecondary,
+                //       ),
+                //     ),
+                //   ),
+                // ),
+                // const SizedBox(height: 20),
 
                 // Logo
                 Center(
