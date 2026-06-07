@@ -4,6 +4,7 @@ from app.core.exceptions import NotificationDeliveryError
 from app.infrastructure.db.session import AsyncSessionFactory
 from app.infrastructure.models.auth.user import UserModel
 from app.infrastructure.models.bp.patient import PatientModel
+from app.infrastructure.models.multi_tenant.organisations import OrganisationModel
 from app.infrastructure.notifications.afriksms_channel import AfrikSmsChannel
 
 from sqlalchemy import select
@@ -40,6 +41,15 @@ class NotificationService(INotificationService):
                 .options(selectinload(PatientModel.user))
             )
             patient = patient_result.scalar_one_or_none()
+            
+            # ── Charger l'organisation ────────────────────────────
+            organisation = None
+            if patient and patient.organisation_id:
+                org_result = await session.execute(
+                    select(OrganisationModel)
+                    .where(OrganisationModel.id == patient.organisation_id)
+                )
+                organisation = org_result.scalar_one_or_none()
 
             # ── Charger le médecin ────────────────────────────────
             medecin = None
@@ -60,14 +70,17 @@ class NotificationService(INotificationService):
 
             # ── Notifier le médecin ───────────────────────────────
             if medecin and medecin.phone_number:
-                await self._notifier_medecin(alerte, medecin)
-
+                await self._notifier_medecin(alerte, medecin,patient)
+            # ── Notifier l'organisation ───────────────────────────
+            if organisation and organisation.telephone:
+                await self._notifier_organisation(alerte, organisation, patient)
+                
     async def _notifier_patient(
         self, alerte: AlerteDTO, user: UserModel
     ) -> None:
         """SMS envoyé au patient."""
         messages = {
-            "hypertension": (
+            "critique": (
                 f"🚨 ALERTE TENSION - G-AutoBP\n"
                 f"Votre tension est CRITIQUE : "
                 f"{alerte.systolique}/{alerte.diastolique} mmHg.\n"
@@ -87,14 +100,40 @@ class NotificationService(INotificationService):
         await self._sms.envoyer(user.phone_number, message)
 
     async def _notifier_medecin(
-        self, alerte: AlerteDTO, medecin: UserModel
-    ) -> None:
-        """SMS envoyé au médecin."""
-        message = (
-            f"🚨 Alerte G-AutoBP\n"
-            f"Patient : {alerte.patient_nom_complet}\n"
-            f"Tension : {alerte.systolique}/{alerte.diastolique} mmHg\n"
-            f"Niveau : {alerte.niveau.upper()}\n"
-            f"{alerte.message}"
-        )
-        await self._sms.envoyer(medecin.phone_number, message)
+            self, alerte: AlerteDTO, medecin: UserModel, patient
+        ) -> None:
+            """SMS envoyé au médecin."""
+            nom_patient = "Patient"
+            if patient and patient.user:
+                nom_patient = (
+                    f"{patient.user.first_name or ''} {patient.user.last_name or ''}".strip()
+                    or patient.user.username
+                    or "Patient"
+                )
+            message = (
+                f"🚨 Alerte G-AutoBP\n"
+                f"Patient : {nom_patient}\n"
+                f"Tension : {alerte.systolique}/{alerte.diastolique} mmHg\n"
+                f"Niveau : {alerte.niveau.value.upper()}\n"
+                f"{alerte.message}"
+            )
+            await self._sms.envoyer(medecin.phone_number, message)
+        
+    async def _notifier_organisation(
+            self, alerte: AlerteDTO, organisation, patient
+        ) -> None:
+            """SMS envoyé à l'organisation."""
+            nom_patient = "Patient"
+            if patient and patient.user:
+                nom_patient = (
+                    f"{patient.user.first_name or ''} {patient.user.last_name or ''}".strip()
+                    or patient.user.username
+                    or "Patient"
+                )
+            message = (
+                f"🚨 Alerte G-AutoBP\n"
+                f"Votre patient {nom_patient} a une tension {alerte.niveau.value.upper()} : "
+                f"{alerte.systolique}/{alerte.diastolique} mmHg.\n"
+                f"Un suivi est recommandé."
+            )
+            await self._sms.envoyer(organisation.telephone, message)

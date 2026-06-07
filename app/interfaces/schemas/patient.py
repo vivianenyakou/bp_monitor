@@ -16,6 +16,7 @@ class PatientSchema(BaseModel):
     emergency_contact: str | None
     medecin_id: int | None = None
     medecin_nom_complet: str | None = None
+    profil_complete: bool = False
 
     model_config = {"from_attributes": True}
 
@@ -27,12 +28,8 @@ class MettreAJourPatientSchema(BaseModel):
     blood_group: BloodGroup | None = None
     address: str | None = None
     emergency_contact: str | None = None
-    seuil_systolique_eleve: int | None = None
-    seuil_diastolique_eleve: int | None = None
-    seuil_systolique_hypertension: int | None = None
-    seuil_diastolique_hypertension: int | None = None
-    seuil_systolique_critique: int | None = None
-    seuil_diastolique_critique: int | None = None
+    est_hypertendu: bool | None = None
+    profil_complete: bool | None = None
 
     model_config = {
         "json_schema_extra": {
@@ -42,6 +39,7 @@ class MettreAJourPatientSchema(BaseModel):
                 "blood_group": "A+",
                 "address": "Lomé, Togo",
                 "emergency_contact": "+228 90 00 00 00",
+                "est_hypertendu": False,
             }
         }
     }
@@ -63,7 +61,7 @@ class PatientListeSchema(BaseModel):
     organisation_id:   int | None
     is_active:         bool
     created_on:        str | None
-    seuils:            dict
+    est_hypertendu:    bool | None
 
     model_config = {"from_attributes": True}
 

@@ -240,6 +240,7 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
+                // ignore: deprecated_member_use
                 color:      Colors.black.withOpacity(0.04),
                 blurRadius: 8,
               ),

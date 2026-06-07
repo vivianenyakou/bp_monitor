@@ -8,14 +8,6 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../profil/providers/profil_provider.dart';
 
-// Seuils HTA — colonne "À domicile" (automesure)
-const _htaSeuilSystoliqueEleve          = 120;
-const _htaSeuilDiastoliqueEleve         = 70;
-const _htaSeuilSystoliqueHypertension   = 135;
-const _htaSeuilDiastoliqueHypertension  = 85;
-const _htaSeuilSystoliqueCritique       = 180;
-const _htaSeuilDiastoliqueCritique      = 110;
-
 class SetupProfilScreen extends ConsumerStatefulWidget {
   const SetupProfilScreen({super.key});
 
@@ -36,7 +28,7 @@ class _SetupProfilScreenState extends ConsumerState<SetupProfilScreen> {
     });
   }
 
-  Future<void> _valider() async {
+Future<void> _valider() async {
     if (_estHypertendu == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -45,36 +37,28 @@ class _SetupProfilScreenState extends ConsumerState<SetupProfilScreen> {
       );
       return;
     }
-
     setState(() => _isSaving = true);
     final user = ref.read(authProvider).user;
-    if (user == null) return;
-
-    // Les appels API sont best-effort : une erreur réseau ne bloque pas le setup.
-    if (_estHypertendu == true) {
-      try {
-        await ref.read(profilProvider.notifier).mettreAJour(
-          patientId:                    user.id,
-          seuilSystoliqueEleve:         _htaSeuilSystoliqueEleve,
-          seuilDiastoliqueEleve:        _htaSeuilDiastoliqueEleve,
-          seuilSystoliqueHypertension:  _htaSeuilSystoliqueHypertension,
-          seuilDiastoliqueHypertension: _htaSeuilDiastoliqueHypertension,
-          seuilSystoliqueCritique:      _htaSeuilSystoliqueCritique,
-          seuilDiastoliqueCritique:     _htaSeuilDiastoliqueCritique,
-        );
-      } catch (_) {}
+    if (user == null) {
+      setState(() => _isSaving = false);
+      return;
     }
+    try {
+      await ref.read(profilProvider.notifier).mettreAJour(
+            patientId:     user.id,
+            estHypertendu: _estHypertendu,
+            profilComplete: true,
+          );
+    } catch (_) {}
 
     if (_medecinSelectionne != null) {
       try {
         await ref.read(profilProvider.notifier).choisirMedecin(
-          patientId: user.id,
-          medecinId: _medecinSelectionne!,
-        );
+              patientId: user.id,
+              medecinId: _medecinSelectionne!,
+            );
       } catch (_) {}
     }
-
-    // Toujours marquer le setup comme terminé, même si les API ont échoué.
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('setup_done_${user.id}', true);
 
@@ -92,7 +76,7 @@ class _SetupProfilScreenState extends ConsumerState<SetupProfilScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final medecins = ref.watch(profilProvider).medecins;
+    //final medecins = ref.watch(profilProvider).medecins;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -163,72 +147,69 @@ class _SetupProfilScreenState extends ConsumerState<SetupProfilScreen> {
               const SizedBox(height: 32),
 
               // ── Sélection médecin ─────────────────────────────────────
-              _sectionLabel('Sélectionner votre médecin référent'),
-              const SizedBox(height: 4),
-              Text(
-                'Optionnel — vous pouvez le choisir plus tard dans votre profil.',
-                style: AppTextStyles.caption,
-              ),
-              const SizedBox(height: 12),
+              // _sectionLabel('Sélectionner votre médecin référent'),
+              // const SizedBox(height: 4),
+              // Text(
+              //   'Optionnel — vous pouvez le choisir plus tard dans votre profil.',
+              //   style: AppTextStyles.caption,
+              // ),
+              // const SizedBox(height: 12),
 
-              if (medecins.isEmpty)
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color:        AppColors.background,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    'Aucun médecin disponible pour le moment.',
-                    style: AppTextStyles.bodySecondary,
-                  ),
-                )
-              else
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color:        AppColors.background,
-                    borderRadius: BorderRadius.circular(12),
-                    border:       Border.all(
-                      color: _medecinSelectionne != null
-                          ? AppColors.primary
-                          : AppColors.border,
-                      width: _medecinSelectionne != null ? 2 : 1,
-                    ),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<int>(
-                      value:        _medecinSelectionne,
-                      isExpanded:   true,
-                      hint:         Text('Choisir un médecin', style: AppTextStyles.bodySecondary),
-                      icon:         const Icon(Icons.keyboard_arrow_down, color: AppColors.primary),
-                      items: [
-                        DropdownMenuItem<int>(
-                          value: null,
-                          child: Text('Aucun pour l\'instant', style: AppTextStyles.bodySecondary),
-                        ),
-                        ...medecins.map((m) => DropdownMenuItem<int>(
-                          value: m.id,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(m.nomComplet, style: AppTextStyles.body.copyWith(
-                                fontWeight: FontWeight.w600,
-                              )),
-                              if (m.specialite != null)
-                                Text(m.specialite!, style: AppTextStyles.caption),
-                            ],
-                          ),
-                        )),
-                      ],
-                      onChanged: (val) => setState(() => _medecinSelectionne = val),
-                    ),
-                  ),
-                ),
-
-              const SizedBox(height: 48),
-
+              // if (medecins.isEmpty)
+              //   Container(
+              //     padding: const EdgeInsets.all(16),
+              //     decoration: BoxDecoration(
+              //       color:        AppColors.background,
+              //       borderRadius: BorderRadius.circular(12),
+              //     ),
+              //     child: Text(
+              //       'Aucun médecin disponible pour le moment.',
+              //       style: AppTextStyles.bodySecondary,
+              //     ),
+              //   )
+              // else
+              //   Container(
+              //     padding: const EdgeInsets.symmetric(horizontal: 16),
+              //     decoration: BoxDecoration(
+              //       color:        AppColors.background,
+              //       borderRadius: BorderRadius.circular(12),
+              //       border:       Border.all(
+              //         color: _medecinSelectionne != null
+              //             ? AppColors.primary
+              //             : AppColors.border,
+              //         width: _medecinSelectionne != null ? 2 : 1,
+              //       ),
+              //     ),
+              //     child: DropdownButtonHideUnderline(
+              //       child: DropdownButton<int>(
+              //         value:        _medecinSelectionne,
+              //         isExpanded:   true,
+              //         hint:         Text('Choisir un médecin', style: AppTextStyles.bodySecondary),
+              //         icon:         const Icon(Icons.keyboard_arrow_down, color: AppColors.primary),
+              //         items: [
+              //           DropdownMenuItem<int>(
+              //             value: null,
+              //             child: Text('Aucun pour l\'instant', style: AppTextStyles.bodySecondary),
+              //           ),
+              //           ...medecins.map((m) => DropdownMenuItem<int>(
+              //             value: m.id,
+              //             child: Column(
+              //               crossAxisAlignment: CrossAxisAlignment.start,
+              //               mainAxisSize: MainAxisSize.min,
+              //               children: [
+              //                 Text(m.nomComplet, style: AppTextStyles.body.copyWith(
+              //                   fontWeight: FontWeight.w600,
+              //                 )),
+              //                 if (m.specialite != null)
+              //                   Text(m.specialite!, style: AppTextStyles.caption),
+              //               ],
+              //             ),
+              //           )),
+              //         ],
+              //         onChanged: (val) => setState(() => _medecinSelectionne = val),
+              //       ),
+              //     ),
+              //   ),
               // ── Bouton valider ────────────────────────────────────────
               SizedBox(
                 width:  double.infinity,

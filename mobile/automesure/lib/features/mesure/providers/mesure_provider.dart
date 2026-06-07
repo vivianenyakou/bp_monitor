@@ -30,6 +30,8 @@ class MesureState {
   final bool popupMedicament;
   final String? messageFin;
   final String? categorieApresEnvoi;
+  final int? heureSoir;
+
 
   const MesureState({
     this.isLoading = false,
@@ -50,6 +52,7 @@ class MesureState {
     this.popupMedicament = false,
     this.messageFin,
     this.categorieApresEnvoi,
+    this.heureSoir,
   });
 
   bool get estHorsCreneaux => creneauActuel == 'hors_creneau';
@@ -95,6 +98,7 @@ class MesureState {
     bool? popupMedicament,
     String? messageFin,
     String? categorieApresEnvoi,
+    int? heureSoir,
   }) =>
       MesureState(
         isLoading: isLoading ?? this.isLoading,
@@ -115,6 +119,7 @@ class MesureState {
         popupMedicament: popupMedicament ?? this.popupMedicament,
         messageFin: messageFin ?? this.messageFin,
         categorieApresEnvoi: categorieApresEnvoi ?? this.categorieApresEnvoi,
+        heureSoir: heureSoir ?? this.heureSoir,
       );
 }
 
@@ -144,6 +149,7 @@ class MesureNotifier extends StateNotifier<MesureState> {
         jour1Complete: (data['jour1_complete'] as bool?) ?? false,
         jour2Complete: (data['jour2_complete'] as bool?) ?? false,
         jour3Complete: (data['jour3_complete'] as bool?) ?? false,
+        heureSoir: data['heure_soir'] as int?,
       );
     } catch (e) {
       state = state.copyWith(
@@ -168,6 +174,7 @@ class MesureNotifier extends StateNotifier<MesureState> {
       final data = resp.data as Map<String, dynamic>;
       state = state.copyWith(
         isLoading: false,
+        sessionId: data['session_id'] as String?,
         popupMedicament: (data['popup_medicament'] as bool?) ?? false,
         messageFin: data['message_fin'] as String?,
         categorieApresEnvoi: data['categorie'] as String?,
@@ -201,6 +208,7 @@ class MesureNotifier extends StateNotifier<MesureState> {
         jour1Complete: (data['jour1_complete'] as bool?) ?? state.jour1Complete,
         jour2Complete: (data['jour2_complete'] as bool?) ?? state.jour2Complete,
         jour3Complete: (data['jour3_complete'] as bool?) ?? state.jour3Complete,
+        heureSoir: (data['heure_soir'] as int?) ?? state.heureSoir,
       );
     }).catchError((_) {});
   }
@@ -242,9 +250,24 @@ class MesureNotifier extends StateNotifier<MesureState> {
 
     return null;
   }
+  Future<void> repondreMedicament(bool medicamentPris) async {
+    final sid = state.sessionId;
+    if (sid != null) {
+      try {
+        await _api.patch(
+          ApiEndpoints.sessionMedicament(sid),
+          data: {'medicament_pris': medicamentPris},
+        );
+      } catch (_) {
+        // best-effort : l'alerte médecin est déjà partie côté backend
+      }
+    }
+    state = state.copyWith(popupMedicament: false);
+  }
 }
 
 final mesureProvider =
     StateNotifierProvider<MesureNotifier, MesureState>((ref) {
   return MesureNotifier(ref.watch(apiClientProvider));
 });
+

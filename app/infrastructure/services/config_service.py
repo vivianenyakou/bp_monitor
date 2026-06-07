@@ -1,5 +1,6 @@
 from sqlalchemy import select
 
+from app.domain.value_objects.seuil import SeuilTA
 from app.infrastructure.db.seed import CONFIGS_DEFAUT
 from app.infrastructure.db.session import AsyncSessionFactory
 from app.infrastructure.models.multi_tenant.system_config import SystemConfigModel
@@ -97,3 +98,16 @@ class ConfigService:
                     session.add(config)
 
             await session.commit()
+                
+                
+    @staticmethod
+    async def get_seuils(organisation_id: int, est_hypertendu: bool) -> SeuilTA:
+        sfx = "_hta" if est_hypertendu else ""
+        return SeuilTA(
+            systolique_eleve=         await ConfigService.get_int(organisation_id, f"seuil_sys_eleve{sfx}", 120),
+            diastolique_eleve=        await ConfigService.get_int(organisation_id, f"seuil_dia_eleve{sfx}", 70),
+            systolique_hypertension=  await ConfigService.get_int(organisation_id, f"seuil_sys_hypertension{sfx}", 135),
+            diastolique_hypertension= await ConfigService.get_int(organisation_id, f"seuil_dia_hypertension{sfx}", 85),
+            systolique_critique=      await ConfigService.get_int(organisation_id, f"seuil_sys_critique{sfx}", 180),
+            diastolique_critique=     await ConfigService.get_int(organisation_id, f"seuil_dia_critique{sfx}", 110),
+        )

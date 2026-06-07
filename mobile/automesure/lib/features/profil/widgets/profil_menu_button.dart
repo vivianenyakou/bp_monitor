@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:automesure/features/mesure/providers/mesure_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -84,11 +85,10 @@ class _ProfilMenuButtonState extends ConsumerState<ProfilMenuButton>
                             if (mounted) context.go('/profil');
                           });
                         },
-                        onLogout: () {
+                        onLogout: () async {
                           _close();
-                          Future.delayed(const Duration(milliseconds: 220), () {
-                            if (mounted) context.go('/login');
-                          });
+                          await ref.read(authProvider.notifier).logout();
+                          if (mounted) context.go('/login');
                         },
                       ),
                     ),

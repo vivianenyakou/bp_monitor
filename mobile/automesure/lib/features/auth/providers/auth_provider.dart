@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_endpoints.dart';
 import '../../../core/utils/phone_number_formatter.dart';
+import '../../mesure/providers/mesure_provider.dart';
+import '../../profil/providers/profil_provider.dart' show profilProvider;
 import '../models/auth_model.dart';
 
 // State
@@ -31,8 +33,9 @@ class AuthState {
 // Notifier
 class AuthNotifier extends StateNotifier<AuthState> {
   final ApiClient _api;
+  final Ref _ref;
 
-  AuthNotifier(this._api) : super(const AuthState());
+  AuthNotifier(this._api, this._ref) : super(const AuthState());
 
   Future<bool> login(String identifiant, String password) async {
     state = state.copyWith(isLoading: true, error: null);
@@ -107,6 +110,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> logout() async {
     await _api.clearTokens();
+    _ref.invalidate(mesureProvider);
+    _ref.invalidate(profilProvider);
     state = const AuthState();
   }
 
@@ -118,6 +123,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 }
 
+
 // Providers
 final apiClientProvider = Provider<ApiClient>((ref) {
   final client = ApiClient();
@@ -126,5 +132,5 @@ final apiClientProvider = Provider<ApiClient>((ref) {
 });
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  return AuthNotifier(ref.watch(apiClientProvider));
+  return AuthNotifier(ref.watch(apiClientProvider), ref);
 });
