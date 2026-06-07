@@ -33,6 +33,7 @@ class ApiEndpoints {
   static const organisationsPubliques = '/organisations/publiques';
   static const utilisateurs           = '/auth/utilisateurs';
   static const creerUtilisateur       = '/auth/utilisateurs';
+  static String sessionMedicament(String sessionId) => '/sessions/$sessionId/medicament';
   static String validerQRCode(String token) =>
     '/qrcodes/valider/$token';
 }

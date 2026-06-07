@@ -1,6 +1,7 @@
+from sqlalchemy import select
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer
-
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.application.dtos.auth_dto import CreerUtilisateurDTO, LoginDTO, RegisterDTO
 from app.application.use_cases.auth.app.application.use_cases.auth.changer_statut_utilisateur import ChangerStatutUtilisateurUseCase
 from app.application.use_cases.auth.app.application.use_cases.auth.creer_utilisateur import CreerUtilisateurUseCase
@@ -9,7 +10,9 @@ from app.application.use_cases.auth.register import RegisterUseCase
 from app.domain.enums.role_enum import RoleUtilisateur
 from app.domain.enums.role_enum import RoleUtilisateur
 from app.core.exceptions import BPMonitorException
+from app.infrastructure.db.session import get_db_session
 from app.infrastructure.models.auth.user import UserModel
+from app.infrastructure.models.bp.patient import PatientModel
 from app.interfaces.dependencies.authorization import get_current_user, require_any_role
 from app.interfaces.schemas.auth import (
     CreerUtilisateurSchema,
@@ -62,15 +65,19 @@ async def login(body: LoginSchema):
     except BPMonitorException as e:
         raise HTTPException(status_code=e.status_code, detail=e.message)
 
-
 @router.get(
     "/me",
     summary="Utilisateur connecté",
 )
 async def me(
     current_user: UserModel = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
 ):
-    """Retourne les informations de l'utilisateur connecté."""
+    res = await session.execute(
+        select(PatientModel).where(PatientModel.user_id == current_user.id)
+    )
+    patient = res.scalar_one_or_none()
+
     return {
         "id": current_user.id,
         "email": current_user.email,
@@ -81,8 +88,10 @@ async def me(
         "last_name": current_user.last_name,
         "phone_number": current_user.phone_number,
         "organisation_code": current_user.organisation_id,
+        "profil_complete": patient.profil_complete if patient else None,
+        "est_hypertendu":  patient.est_hypertendu  if patient else None,
     }
-
+    
 @router.post(
     "/utilisateurs",
     status_code=status.HTTP_201_CREATED,

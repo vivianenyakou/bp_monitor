@@ -23,6 +23,7 @@ class SessionSchema(BaseModel):
     jour_actuel:       int
     mesures_restantes: int
     medicament_pris:   bool | None
+    heure_soir:        int | None = None
     demarre_le:        datetime
     termine_le:        datetime | None
 

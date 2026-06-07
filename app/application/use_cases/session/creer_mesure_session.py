@@ -134,7 +134,7 @@ class CreerMesureSessionUseCase:
                 numero_mesure=numero_mesure,
                 categorie=categorie,
                 session_id=sess.session_id,
-                prise_le=datetime.now(timezone.utc),
+                prise_le=datetime.utcnow(),
                 notes=dto.notes,
             )
             db.add(mesure)
@@ -152,12 +152,15 @@ class CreerMesureSessionUseCase:
                     db, patient.id, sess.session_id, jour, creneau
                 )
                 if moyenne:
+                    categorie_moyenne = self._analyseur.categoriser(moyenne)
                     niveau = self._analyseur.niveau_alerte(moyenne)
-                    if niveau == NiveauAlerte.CRITIQUE:
-                            alerte_dto = await self._creer_alerte(db, patient, moyenne, niveau)
+                    
+                    if niveau == (NiveauAlerte.CRITIQUE or NiveauAlerte.AVERTISSEMENT):
+                        alerte_dto = await self._creer_alerte(db, patient, moyenne, niveau)
 
-                    if moyenne == CategorieTA.CRITIQUE:
-                        popup_medicament = True
+                    if categorie_moyenne in (CategorieTA.ELEVEE,CategorieTA.HYPERTENSION,CategorieTA.CRITIQUE,
+                                        ):
+                                            popup_medicament = True
 
             # 12. Jour complet ?
             self._verifier_completion_jour(sess, jour)
@@ -166,7 +169,7 @@ class CreerMesureSessionUseCase:
             message_fin = None
             if sess.jour1_complete and sess.jour2_complete and sess.jour3_complete:
                 sess.protocole_termine = True
-                sess.termine_le = datetime.now(timezone.utc)
+                sess.termine_le = datetime.utcnow()
                 message_fin =  await ConfigService.get(patient_org_id, "message_felicitations")
 
             await db.commit()
@@ -215,7 +218,7 @@ class CreerMesureSessionUseCase:
                 date_jour1=       aujourd_hui,
                 date_jour2=       aujourd_hui + timedelta(days=1),
                 date_jour3=       aujourd_hui + timedelta(days=2),
-                demarre_le=       datetime.now(timezone.utc),
+                demarre_le=       datetime.utcnow(),
                 protocole_termine= False,
             )
             db.add(sess)
@@ -316,7 +319,7 @@ class CreerMesureSessionUseCase:
             niveau=       niveau,
             statut=       StatutAlerte.EN_ATTENTE,
             message=      message,
-            declenchee_le= datetime.now(timezone.utc),
+            declenchee_le= datetime.utcnow(),
         )
         db.add(alerte)
         await db.flush()

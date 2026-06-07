@@ -5,8 +5,10 @@ from sqlalchemy import select
 
 from app.application.dtos.session_dto import SessionDTO
 from app.core.exceptions import PatientNotFoundError
+from app.domain.enums.bp_category import PeriodeMesure
 from app.domain.services.creneau_service import Creneau, CreneauService
 from app.infrastructure.db.session import AsyncSessionFactory
+from app.infrastructure.models.bp.mesure import MesureModel
 from app.infrastructure.models.bp.patient import PatientModel
 from app.infrastructure.models.bp.session import SessionModel
 
@@ -51,37 +53,27 @@ class ObtenirSessionUseCase:
             # 4. Calculer le créneau actuel
             patient_org_id  = patient.organisation_id or 1
             creneau_service = await CreneauService.pour_organisation(patient_org_id)
+
+            # Ancrage du soir : 1ère mesure matin du jour actif (si session existante)
+            premiere_matin = None
+            if sess:
+                jour_pour_ancrage = self._calculer_jour(sess, aujourd_hui)
+                res_m = await session.execute(
+                    select(MesureModel)
+                    .where(MesureModel.session_id == sess.session_id)
+                    .where(MesureModel.periode == PeriodeMesure.MATIN)
+                    .where(MesureModel.jour == jour_pour_ancrage)
+                    .where(MesureModel.numero_mesure == 1)
+                )
+                mesure_ref = res_m.scalar_one_or_none()
+                premiere_matin = mesure_ref.prise_le if mesure_ref else None
+            creneau_service.definir_ancrage_soir(premiere_matin)
+
             creneau         = creneau_service.creneau_actuel()
+            heure_soir      = creneau_service.heure_ouverture_soir()
             message_creneau = ""
             if creneau == Creneau.HORS_CRENEAU:
                 message_creneau = creneau_service.prochain_creneau()
-
-            if not sess:
-                return SessionDTO(
-                    session_id=        "",
-                    patient_id=        patient_id,
-                    date_jour1=        aujourd_hui,
-                    date_jour2=        aujourd_hui,
-                    date_jour3=        aujourd_hui,
-                    mesures_j1_matin=  0,
-                    mesures_j1_soir=   0,
-                    mesures_j2_matin=  0,
-                    mesures_j2_soir=   0,
-                    mesures_j3_matin=  0,
-                    mesures_j3_soir=   0,
-                    jour1_complete=    False,
-                    jour2_complete=    False,
-                    jour3_complete=    False,
-                    protocole_termine= False,
-                    creneau_actuel=    creneau.value,
-                    message_creneau=   message_creneau,
-                    jour_actuel=       1,
-                    mesures_restantes= 3,
-                    medicament_pris=   None,
-                    demarre_le=        datetime.now(timezone.utc),
-                    termine_le=        None,
-                )
-
             # 5. Déterminer le jour actuel
             jour_actuel = self._calculer_jour(sess, aujourd_hui)
 
@@ -113,6 +105,7 @@ class ObtenirSessionUseCase:
                 medicament_pris=   sess.medicament_pris,
                 demarre_le=        sess.demarre_le,
                 termine_le=        sess.termine_le,
+                heure_soir=        heure_soir,
             )
 
     def _calculer_jour(self, sess: SessionModel, aujourd_hui: date) -> int:

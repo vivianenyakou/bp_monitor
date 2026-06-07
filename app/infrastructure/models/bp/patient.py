@@ -16,6 +16,7 @@ class PatientModel(AuditableEntity):
     blood_group       = Column(SqlEnum(BloodGroup), nullable=True)
     medecin_id        = Column(Integer, ForeignKey("users.id"), nullable=True)
     est_hypertendu    = Column(Boolean, default=False, nullable=False, server_default="false")
+    profil_complete = Column(Boolean, nullable=False, server_default="false", default=False)
     
     # Relations
     user    = relationship("UserModel", back_populates="patient_profile" , foreign_keys=[user_id])

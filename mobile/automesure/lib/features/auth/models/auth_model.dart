@@ -28,6 +28,8 @@ class UserModel {
   final List<String> roles;
   final List<String> permissions;
   final int? organisationId;
+  final bool? profilComplete;
+  final bool? estHypertendu; 
 
   const UserModel({
     required this.id,
@@ -39,6 +41,8 @@ class UserModel {
     required this.roles,
     required this.permissions,
     this.organisationId,
+    this.profilComplete,
+    this.estHypertendu,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
@@ -51,13 +55,15 @@ class UserModel {
         roles: List<String>.from(json['roles'] ?? []),
         permissions: List<String>.from(json['permissions'] ?? []),
         organisationId: json['organisation_id'],
+        profilComplete: json['profil_complete'],
+        estHypertendu: json['est_hypertendu'],
       );
 
   bool get isMedecin => roles.contains(AppRole.MEDECIN);
   bool get isPatient => roles.contains(AppRole.PATIENT);
   bool get isAdmin   => roles.contains(AppRole.ADMIN);
   bool get isSuperAdmin   => roles.contains(AppRole.SUPER_ADMIN);
-
+  bool get doitFaireSetup => isPatient && (profilComplete != true);
 
   String get nomComplet =>
       '${firstName ?? ''} ${lastName ?? ''}'.trim();

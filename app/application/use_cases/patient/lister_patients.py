@@ -55,13 +55,5 @@ class ListerPatientsUseCase:
             "organisation_id":   patient.organisation_id,
             "is_active":         user.is_active,
             "created_on":        str(patient.created_on) if patient.created_on else None,
-            # Seuils personnalisés
-            "seuils": {
-                "systolique_eleve":            patient.seuil_systolique_eleve,
-                "diastolique_eleve":           patient.seuil_diastolique_eleve,
-                "systolique_hypertension":     patient.seuil_systolique_hypertension,
-                "diastolique_hypertension":    patient.seuil_diastolique_hypertension,
-                "systolique_critique":         patient.seuil_systolique_critique,
-                "diastolique_critique":        patient.seuil_diastolique_critique,
-            },
+            "est_hypertendu":    patient.est_hypertendu,
         }

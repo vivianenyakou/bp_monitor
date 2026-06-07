@@ -76,3 +76,7 @@ class CreneauService:
 
     def est_soir(self) -> bool:
         return self.creneau_actuel() == Creneau.SOIR
+    
+    def heure_ouverture_soir(self) -> int | None:
+        """Heure GMT à laquelle le créneau du soir s'ouvre (None si pas encore calculée)."""
+        return self._soir_debut

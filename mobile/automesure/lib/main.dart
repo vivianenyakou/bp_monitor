@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'core/constants/app_colors.dart';
 //import 'features/admin/screens/admin_roles_screen.dart';
+import 'core/widgets/inactivity_wrapper.dart';
 import 'features/admin/screens/admin_screen.dart';
 import 'features/historique/screens/historique_screen.dart';
 import 'features/medecin/screens/dashboard_medecin_screen.dart';
@@ -121,6 +122,9 @@ class BPMonitorApp extends StatelessWidget {
         useMaterial3: true,
       ),
       routerConfig: _router,
+      builder: (context, child) {
+        return InactivityWrapper(child: child ?? const SizedBox());
+      }
     );
   }
 }
