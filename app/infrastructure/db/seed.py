@@ -197,6 +197,8 @@ CONFIGS_DEFAUT = {
     "message_bp_critique_pris":     {"valeur": "Votre tension est critique. Contactez immédiatement votre médecin.", "description": "Message critique — médicament déjà pris"},
     "message_bp_critique_non_pris": {"valeur": "Prenez votre médicament et consultez votre médecin.", "description": "Message critique — médicament non pris"},
     "message_felicitations": {"valeur": "Félicitations, votre tension est contrôlée.", "description": "Message fin des 3 jours"},
+    "message_surveillance": {"valeur": "Votre tension moyenne est légèrement élevée. Surveillez-la et adoptez de bonnes habitudes (sel, activité, sommeil).", "description": "Bilan fin — tension élevée (surveillance, sans alerte)"},
+    "message_non_controle": {"valeur": "Votre tension n'est pas contrôlée sur les 3 jours. Veuillez consulter votre médecin.", "description": "Bilan fin — tension non contrôlée"},
     
     # Test / Debug
     "debug_heure_simulee":    {"valeur": "",     "description": "Heure simulée pour tests (vide = heure réelle)"},
