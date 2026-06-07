@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.application.dtos.session_dto import CreerMesureAvecSessionDTO
+from app.application.use_cases.multi_tenant.prise_medicament import EnregistrerMedicamentUseCase
+from app.application.use_cases.multi_tenant.verifier_creneau import VerifierCreneauUseCase
 from app.application.use_cases.session.creer_mesure_session import (
     CreerMesureSessionUseCase,
 )
@@ -69,25 +71,24 @@ async def creer_mesure_session(
         raise HTTPException(status_code=e.status_code, detail=e.message)
 
 
-@router.get(
-    "/creneau",
-    summary="Vérifier le créneau actuel",
-)
-async def verifier_creneau(
-    current_user: UserModel = Depends(get_current_user),
-):
-    """Retourne le créneau actuel et le message si hors créneau."""
-    from app.domain.services.creneau_service import CreneauService
-    from datetime import datetime, timezone
+@router.get("/creneau", summary="Vérifier le créneau actuel")
+async def verifier_creneau(current_user: UserModel = Depends(get_current_user)):
+    use_case = VerifierCreneauUseCase()
+    return await use_case.executer(current_user.id)
 
-    organisation_id = current_user.organisation_id or 1
-    creneau_service = await CreneauService.pour_organisation(organisation_id)
-    creneau = creneau_service.creneau_actuel()
-    return {
-        "creneau":          creneau.value,
-        "est_disponible":   creneau_service.est_disponible(),
-        "heure_utc":        datetime.now(timezone.utc).strftime("%H:%M UTC"),
-        "message":          creneau_service.prochain_creneau()
-                            if not creneau_service.est_disponible()
-                            else None,
-    }
+@router.patch(
+    "/{session_id}/medicament",
+    summary="Enregistrer la réponse au pop-up médicament",
+)
+async def enregistrer_medicament(
+    session_id: str,
+    medicament_pris: bool,
+    current_user: UserModel = Depends(
+        require_any_role(RoleUtilisateur.PATIENT, RoleUtilisateur.MEDECIN, RoleUtilisateur.ADMIN)
+    ),
+):
+    try:
+        use_case = EnregistrerMedicamentUseCase()
+        return await use_case.executer(session_id, medicament_pris)
+    except BPMonitorException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.message)

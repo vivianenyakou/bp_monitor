@@ -84,13 +84,14 @@ class AdminDrawer extends ConsumerWidget {
           //     context.go('/admin/parametres');
           //   },
           // ),
-          const Divider(),
+         const Divider(),
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
             title: const Text('Déconnexion', style: TextStyle(color: Colors.red)),
-            onTap: () {
+            onTap: () async {
               Navigator.pop(context);
-              context.go('/login');
+              await ref.read(authProvider.notifier).logout();
+              if (context.mounted) context.go('/login');
             },
           ),
         ],

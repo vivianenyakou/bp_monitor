@@ -220,7 +220,7 @@ class _SaisieMesureScreenState extends ConsumerState<SaisieMesureScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
-              notifier.dismissPopupMedicament();
+              notifier.repondreMedicament(false);
             },
             child: const Text('Non'),
           ),
@@ -229,7 +229,7 @@ class _SaisieMesureScreenState extends ConsumerState<SaisieMesureScreen> {
                 ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
             onPressed: () {
               Navigator.pop(ctx);
-              notifier.dismissPopupMedicament();
+              notifier.repondreMedicament(true);
             },
             child: const Text('Oui', style: TextStyle(color: Colors.white)),
           ),
@@ -321,9 +321,18 @@ class _SaisieMesureScreenState extends ConsumerState<SaisieMesureScreen> {
     );
   }
 
-  Widget _buildCreneauTermine(MesureState state) {
+Widget _buildCreneauTermine(MesureState state) {
     final creneau = state.creneauActuel == 'matin' ? 'matin' : 'soir';
-    final prochain = state.creneauActuel == 'matin' ? 'ce soir' : 'demain matin';
+
+    final String prochain;
+    if (state.creneauActuel == 'matin') {
+      prochain = state.heureSoir != null
+          ? 'Revenez à ${state.heureSoir}h pour la prise du soir.'
+          : 'Revenez ce soir pour continuer le suivi.';
+    } else {
+      prochain = 'Revenez demain matin pour continuer le suivi.';
+    }
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -345,7 +354,7 @@ class _SaisieMesureScreenState extends ConsumerState<SaisieMesureScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Revenez $prochain pour continuer le suivi.',
+            prochain,
             style: AppTextStyles.caption.copyWith(color: AppColors.normale),
             textAlign: TextAlign.center,
           ),
@@ -353,7 +362,7 @@ class _SaisieMesureScreenState extends ConsumerState<SaisieMesureScreen> {
       ),
     );
   }
-
+  
   Widget _buildProtocoleTermine(BuildContext context) {
     return Container(
       width: double.infinity,

@@ -37,6 +37,9 @@ class SessionDTO:
 
     demarre_le:        datetime
     termine_le:        datetime | None
+    
+    heure_soir:        int | None
+
 
 
 @dataclass

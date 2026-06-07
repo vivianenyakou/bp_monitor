@@ -125,7 +125,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     return age;
   }
 
-  Future<void> _register() async {
+Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
     final ok = await ref.read(authProvider.notifier).register(
       username:         _usernameCtrl.text.trim(),
@@ -139,14 +139,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       qrToken:          widget.qrToken,
     );
     if (ok && mounted) {
-      final user  = ref.read(authProvider).user;
-      final prefs = await SharedPreferences.getInstance();
-      final done  = prefs.getBool('setup_done_${user?.id}') ?? false;
-      if (!done && (user?.isPatient ?? false)) {
-        if (mounted) context.go('/setup-profil');
-      } else {
-        if (mounted) context.go('/home');
-      }
+      final user = ref.read(authProvider).user;
+      context.go((user?.doitFaireSetup ?? false) ? '/setup-profil' : '/home');
     }
   }
 

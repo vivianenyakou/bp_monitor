@@ -26,7 +26,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
-  Future<void> _login() async {
+Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
     final ok = await ref.read(authProvider.notifier).login(
       _identCtrl.text.trim(),
@@ -41,9 +41,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } else if (user?.isMedecin == true) {
       context.go('/medecin/dashboard');
     } else if (user?.isPatient == true) {
-      final prefs = await SharedPreferences.getInstance();
-      final done  = prefs.getBool('setup_done_${user!.id}') ?? false;
-      if (mounted) context.go(done ? '/home' : '/setup-profil');
+      context.go(user!.doitFaireSetup ? '/setup-profil' : '/home');
     } else {
       context.go('/home');
     }
