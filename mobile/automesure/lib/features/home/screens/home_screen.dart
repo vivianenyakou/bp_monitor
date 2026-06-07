@@ -67,7 +67,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                           ),
                           Text(
-                            'Suivi tension',
+                            'AutoMesure de la TA',
                             style: AppTextStyles.heading2.copyWith(
                               color: AppColors.primary,
                             ),

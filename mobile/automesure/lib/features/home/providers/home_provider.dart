@@ -11,7 +11,7 @@ class DerniereMesure {
   final String sessionId;
   final String periode;
   final int jour;
-  final int numeroMesure;
+  final int? numeroMesure;
   final DateTime priseLE;
 
   const DerniereMesure({
@@ -22,7 +22,7 @@ class DerniereMesure {
     required this.sessionId,
     required this.periode,
     required this.jour,
-    required this.numeroMesure,
+    this.numeroMesure,
     required this.priseLE,
   });
 
@@ -78,16 +78,15 @@ class HomeNotifier extends StateNotifier<HomeState> {
   HomeNotifier(this._api) : super(const HomeState());
 
   Future<void> charger(int patientId) async {
+    print('[HOME] charger patientId=$patientId');
     state = state.copyWith(isLoading: true, patientId: patientId);
     try {
-      final response = await _api.get(
-        ApiEndpoints.mesuresPatient(patientId),
-      );
+      // 1. Mesures du patient (pour le compteur du jour)
+      final response = await _api.get(ApiEndpoints.mesuresPatient(patientId));
       final mesures = (response.data as List)
           .map((m) => DerniereMesure.fromJson(m))
           .toList();
 
-      // Compter les mesures d'aujourd'hui
       final today = DateTime.now();
       final mesuresAujourdhui = mesures.where((m) {
         return m.priseLE.year == today.year &&
@@ -95,13 +94,23 @@ class HomeNotifier extends StateNotifier<HomeState> {
             m.priseLE.day == today.day;
       }).length;
 
+      // 2. Moyenne du dernier créneau complet (null si aucun)
+      DerniereMesure? moyenne;
+      final respMoy = await _api.get(ApiEndpoints.moyenneCreneau(patientId));
+      print('[HOME] moyenne réponse = ${respMoy.data}');
+      if (respMoy.data != null) {
+        moyenne = DerniereMesure.fromJson(respMoy.data);
+      }
+
+      // 3. Mise à jour de l'état
       state = state.copyWith(
         isLoading: false,
-        derniereMesure: mesures.isNotEmpty ? mesures.first : null,
+        derniereMesure: moyenne,
         nombreMesuresAujourdhui: mesuresAujourdhui,
         patientId: patientId,
       );
     } catch (e) {
+      print('[HOME] ERREUR = $e');
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }

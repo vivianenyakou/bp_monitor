@@ -55,14 +55,8 @@ class DerniereMesureCard extends StatelessWidget {
             children: [
               const Text('📊', style: TextStyle(fontSize: 40)),
               const SizedBox(height: 8),
-              Text(
-                'Aucune mesure encore',
-                style: AppTextStyles.body,
-              ),
-              Text(
-                'Prenez votre première mesure',
-                style: AppTextStyles.caption,
-              ),
+             Text('Créneau en cours', style: AppTextStyles.body),
+              Text('La moyenne s\'affichera après 3 mesures', style: AppTextStyles.caption),
             ],
           ),
         ),
@@ -92,7 +86,7 @@ class DerniereMesureCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'DERNIÈRE MESURE',
+                    'MOYENNE DE LA DERNIÈRE MESURE',
                     style: AppTextStyles.caption.copyWith(
                       letterSpacing: 1.2,
                       fontWeight: FontWeight.w600,
